@@ -86,7 +86,7 @@
 
                 function api($irc, $data)
                 {
-                        $irc1 = array("java"=>" http://docs.oracle.com/javase/1.5.0/docs/api/", "php"=>" http://php.net/manual/en/book.spl.php", "haskell"=>" http://www.haskell.org/hoogle/", "python"=>" http://docs.python.org/library/", "perl"=>" http://perldoc.perl.org/index-language.html", "no"=>" Language not found. Please try again.");
+                        $irc1 = array("java"=>" http://docs.oracle.com/javase/1.5.0/docs/api/", "php"=>" http://php.net/manual/en/book.spl.php", "haskell"=>" http://www.haskell.org/hoogle/", "python"=>" http://docs.python.org/library/", "perl"=>" http://perldoc.perl.org$
 
 
                         if ($data->message == "!api java")
@@ -162,7 +162,7 @@
                 //espn scores
                 function scoresTemp($irc, $data)
                 {
-                        $score = array("ncaa" => " http://scores.espn.go.com/ncb/scoreboard", "nba" => " http://espn.go.com/nba/scoreboard", "nfl" => " http://scores.espn.go.com/nfl/scoreboard", "nhl" => " http://scores.espn.go.com/nhl/scoreboard", "mlb" => " http://espn.go.com/mlb/scoreboard");
+                        $score = array("ncaa" => " http://scores.espn.go.com/ncb/scoreboard", "nba" => " http://espn.go.com/nba/scoreboard", "nfl" => " http://scores.espn.go.com/nfl/scoreboard", "nhl" => " http://scores.espn.go.com/nhl/scoreboard", "mlb" => " http://esp$
 
                                 if ($data->message == "!scores ncaa")
                                 {
@@ -265,53 +265,6 @@
                         $hashed = substr($str, 6);
 
                         $irc->message(SMARTIRC_TYPE_QUERY, $data->nick, md5($hashed));
-                }
-
-                function nice($irc, $data)
-                {
-                        $comp = array(" <--This guy. AWESOME", " You're the best", " Everyone is jealous of you", " You're amazing", " <--Next President");
-                        $rand_comp = shuffle($comp);
-
-                        $msg = $data->message;
-                        $name = substr($msg, 12);
-
-
-                        if ($data->message == "!compliment !roulette" || $data->message == "!compliment !roulette " || $data->message == "!compliment !dino !roulette" ||		  							 $data->message == "!compliment !dino !roulette ")
-                        {
-                                $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' Stop trying to break things');
-                        }
-
-                        else
-
-                                $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $name.$comp[$rand_comp]);
-
-                }
-
-                function mean($irc, $data)
-                {
-                        $ins = array(" You suck", " It would be better if you left", " You will never amount to anything", " Im just going to pretend like you arent 		  										here", " No one likes you");
-                        $rand_ins = shuffle($ins);
-
-                        $msg = $data->message;
-                        $name= substr($msg, 8);
-
-                        if ($data->message == "!insult !roulette" || $data->message == "!insult !roulette " || $data->message == "!insult !dino !roulette" || $data->					  												message == "!insult !dino !roulette ")
-                        {
-                                $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' Stop trying to break things');
-                        }
-
-                        else
-
-                                $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $name.$ins[$rand_ins]);
-
-                }
-
-                function drinking_game($irc, $data)
-                {
-                        $nicks = array("ScooterAmerica", "stan_theman", "bro_keefe", "compywiz", "NellyFatFingers", "jico", "prg318", "ericoc", "OpEx");
-                        $drinker = shuffle($nicks);
-
-                        $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $nicks[$drinker]);
                 }
 
 
