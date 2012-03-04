@@ -428,6 +428,9 @@
         $irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '!say', $bot, 'query');
         $irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '!dcsmeeting', $bot, 'countdown');
         $irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '!hash', $bot, 'hash');
+		$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '!compliment', $bot, 'nice');
+        $irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '!insult', $bot, 'mean');
+        $irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '!drink', $bot, 'drinking_game');
 
         //bot actions
         $irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!quit', $bot, 'quit');
