@@ -25,7 +25,7 @@
         }
 
 
-                //query
+                //tells the bot what to say via PM
                    function query(&$irc, &$data)
                 {
                         $query = $data->message;
@@ -119,7 +119,7 @@
                 }
 
 
-        //api searches
+        //search specific api libraries
 
                 function php_search($irc, $data)
                 {
@@ -159,6 +159,7 @@
 
                         $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' http://www.haskell.org/hoogle/?hoogle='.$term5);
                 }
+				
                 //espn scores
                 function scoresTemp($irc, $data)
                 {
@@ -221,7 +222,7 @@
                         $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': ping!');
                 }
 
-
+				//countdown to next meeting
                 function countdown($irc, $data)
                 {
                         date_default_timezone_set('EST');
@@ -259,6 +260,7 @@
 
                 }
 
+				//md5 hash a string
                 function hash($irc, $data)
                 {
                         $str = $data->message;
@@ -267,6 +269,7 @@
                         $irc->message(SMARTIRC_TYPE_QUERY, $data->nick, md5($hashed));
                 }
 
+				//compliment a user
                 function nice($irc, $data)
                 {
                         $comp = array(" <--This guy. AWESOME", " You're the best", " Everyone is jealous of you", " You're amazing", " <--Next President");
@@ -287,6 +290,7 @@
 
                 }
 
+				//insult a user
                 function mean($irc, $data)
                 {
                         $ins = array(" You suck", " It would be better if you left", " You will never amount to anything", " Im just going to pretend like you arent 		  										here", " No one likes you");
@@ -305,6 +309,7 @@
                                 $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $name.$ins[$rand_ins]);
 
                 }
+
 
                 function drinking_game($irc, $data)
                 {
@@ -346,6 +351,7 @@
                                 $irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'gives the burn ointment to '.$short);
                 }
 
+				//tells the bot to kick a user
                 function kickNick($irc, $data)
                  {
                                  if(isset($data->messageex[1],$data->messageex[2]))
@@ -362,6 +368,7 @@
 
                 }
 
+				//ops the user (bot must be opped for this to work)
                 function opMe(&$irc, &$data)
                 {
                         if ($data->nick == "ScooterAmerica" || $data->nick == "compywiz" || $data->nick == "bro_keefe" || $data->nick == "stan_theman" || $data->nick == "jico" || $data->nick == "NellyFatFingers" || $data->nick == "prg318" || $data->nick == "ericoc")
@@ -377,6 +384,7 @@
                 }
 
 
+				//decision maker based on "drawing straws"
                 function straws($irc, $data)
                 {
                         $nicks = array(" ScooterAmerica", " stan_theman", " bro_keefe", " compywiz", " NellyFatFingers", " jico", " prg318", " ericoc");
