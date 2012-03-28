@@ -160,6 +160,51 @@
                         $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' http://www.haskell.org/hoogle/?hoogle='.$term5);
                 }
 				
+			
+			function espnScores ($irc, $data)
+			{	
+				$content = get_content ("http://sports.espn.go.com/ncb/bottomline/scores");
+
+				$content_array=explode("&", $content);
+				$scorearray = array();
+				$i=0;
+				
+				foreach($content_array as $content) 
+				{
+					if (strpos($content, "_left")) 
+					{
+						$equalpos = strpos($content, "=");
+						$end = strlen($content);
+						$title = substr($content, ($equalpos+1), $end);
+						$title = str_replace("^", "", $title);
+						$title = str_replace("%20", " ", $title);
+						$scorearray[$i]["title"] = $title;
+					}
+					
+					if (strpos($content, "_url")) 
+					{
+						$equalpos = strpos($content, "=");
+						$end = strlen($content);
+						$url = substr($content, ($equalpos+1), $end);
+						$url = str_replace("^", "", $url);
+						$url = str_replace("%20", " ", $url);
+						$scorearray[$i]["url"] = $url;
+						$i++;
+					}
+				}
+					
+				foreach($scorearray as $score) 
+				{
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "<item>\n");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "<title>".$score["title"]."</title>\n");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "<link>".$score["url"]."</link>\n");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "</item>\n");
+				}
+
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "</channel>\n");
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel,"</rss>\n");
+		}
+				
                 //espn scores
                 function scoresTemp($irc, $data)
                 {
@@ -222,43 +267,62 @@
                         $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': ping!');
                 }
 
-				//countdown to next meeting
-                function countdown($irc, $data)
-                {
-                        date_default_timezone_set('EST');
-                        $date = "03.23.2012";
-                        $day = "Friday";
-                        $time = "6:30 pm";
+                //countdown to next meeting
+               function countdown($irc, $data)
+               {
+                      date_default_timezone_set('EST');
+                      $start_time = date('18:30');
 
-                        $target = mktime (18, 30, 0, 3, 23, 2012);
-                        $seconds_away = $target-time();
+                     	 $date = "03.23.2012";
+                         $day = "Friday";
+                         $time = "6:30 pm";
 
-                        $days = (int)($seconds_away/60/60/24);
-                        $seconds_away-=$days;
+                         $target = null;
+                         $seconds_away = $target-time();
 
-                        $hours = (int)($seconds_away/60/60);
-                        $seconds_away-=$hours;
+                         $days = (int)($seconds_away/60/60/24);
+                         $seconds_away-=$days;
 
-                        $mins = (int)($seconds_away/60);
+                         $hours = (int)($seconds_away/60/60);
+                         $seconds_away-=$hours;
+
+                         $mins = (int)($seconds_away/60);
                         $seconds_away-=$mins;
 
+						//if target date is set function will output time remaining based on parameters
+                         if ($target != null)
+                         { 
+							     while ($days >= 0 && $hours >= 0 && $minutes >= 0)
+                                 {
+                                         if ($days > 0)
+                                        {
+                                                 $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is on '.$day.', '.$date.' at '.$time.'. Which is in '.$days.' days ');
+										}
 
+                                         elseif ($hours > 0 && $days == 0)
+                                         {
+                                                 $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is today at '.$time.' in '.$hours.' hours');
+										 }
 
-                        if ($days > 0)
-                        {
-                                $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is on '.$day.', '.$date.' at '.$time.'. Which is in '.$days.' days ');
-                        }
+                                         else
+										{
+                                                 $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is today, in '.$mins.' minutes! \o/');
+								 		}
+								 }
+							 
 
-                        elseif ($hours > 0 && $days == 0)
-                        {
-                                 $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is today at '.$time.' in '.$hours.' hours');
-                        }
-
-                        else
-
-                                $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is today, in '.$mins.' minutes! \o/');
-
-                }
+								 while ($days < 0 && $hours < 0 && $minutes < 0)
+								 {
+								 	$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'You missed it');
+								 }
+							
+						 }
+						 
+						 else
+						 
+                                 $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next DCS meeting has not yet been scheduled');
+						 
+			   }
 
 				//md5 hash a string
                 function hash($irc, $data)
