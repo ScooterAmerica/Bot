@@ -196,10 +196,7 @@
 
 
            //triggers (talk)
-                function right($irc, $data)
-                {
-                        $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel,'RIIIIIIIIIIIGHT!');
-                }
+         
 
                 function neilforoshan($irc, $data)
                 {
@@ -221,45 +218,244 @@
                         $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': ping!');
                 }
 
+                         //countdown to next meeting
+                 function countdown($irc, $data)
+                 {
 
-                function countdown($irc, $data)
-                {
-                        date_default_timezone_set('EST');
-                        $date = "03.23.2012";
-                        $day = "Friday";
-                        $time = "6:30 pm";
+                 global $attendance;
 
-                        $target = mktime (18, 30, 0, 3, 23, 2012);
-                        $seconds_away = $target-time();
+                         date_default_timezone_set('EST');
+                         $start_time = date('20:00');
 
-                        $days = (int)($seconds_away/60/60/24);
-                        $seconds_away-=$days;
+                         $date = "04.20.2012";
+                         $day = "Friday";
+                         $time = "8:00 pm";
 
-                        $hours = (int)($seconds_away/60/60);
-                        $seconds_away-=$hours;
+                         $target = null; // null target until next date is set
+                         //$target = mktime(20, 0, 0, 4, 27, 2012);
+                         $seconds_away = $target-time();
 
-                        $mins = (int)($seconds_away/60);
-                        $seconds_away-=$mins;
+                         $days = (int)($seconds_away/60/60/24);
+                         $seconds_away-=$days;
+
+                         $hours = (int)($seconds_away/60/60);
+                         $seconds_away-=$hours;
+
+                         $mins = (int)($seconds_away/60);
+                         $seconds_away-=$mins;
+
+                         if ($target != null)
+                         {
+                                  if ($days > 0)
+                                  {
+                                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is on '.$day.', '.$date    .' at '.$time.'. Which is in '.$days.' day(s)');
+
+                                  }
+                                  elseif ($hours > 0 && $days == 0)
+                                  {
+                                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is today at '.$time.' i    n '.$hours.' hour(s)');
+                                  }
+
+                                  elseif ($hours == 0 && $days == 0 && $mins > 0)
+                                  {
+                                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "The next dcs meeting is today, in ".$mins."     minute(s)! \o/. Confirming yes or no at this point is pretty useless don't you think?");
+                                  }
+
+                                  else
+                                   {
+                                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." The meeting has started or is a    lready over. Either way, if you're reading this, You probably missed it");
+
+                                  }
+
+                                  if (array_key_exists($data->nick, $attendance))
+                                  {
+                                          print_r($attendance);
+                                          return;
+                                  }
+
+                               else
+                                  {
+                                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' Please let us know if you plan     to attend by "!confirm <yes>/<no>"');
+                                  }
+
+                          }
+                          else
+
+                                  $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next DCS meeting has not yet been scheduled');
+                 }
+
+         //topic function to set topic for meetings
+         function meeting_Topic($irc, $data)
+         {
+                 //keeps the array with current values
+                  static $topic = array();
+
+                  //takes the message and uses substr to cut out the trigger words and keep the end needed for the new topic
+                   $changeTopic = $data->message;
+                   $topicChange = array(0 => substr($changeTopic, 11));
+                   $newTopic = array_replace($topic, $topicChange); //replaces the first array with the array from above
+
+                  //makes the bot spit out the current topic set
+                   if ($data->message == "!topic")
+                   {
+                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "The topic for the next DCS meeting is ".$topic[0]);
+                          print_r($topic);//prints the $topic array for debugging purposes
+                  }
+
+                   else //code to run to change the topic
+                  {
+                          //kept as a 1 value array. removes the current topic and pushes the new on onto the array
+                          array_pop($topic);
+                          array_push($topic, $newTopic[0]);
+
+                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic Changed. The new Topic for the next DCS meeting is ".$newTopic[0]);
+                       print_r($topic);
+                  }
+         }
 
 
+           //function to keep a list of those who will be and wont be attending meetings
+             function meeting_List($irc, $data)
+             {
+                  /*
+                          todo
+                          - save arrays if bot quits
+                  */
 
-                        if ($days > 0)
-                        {
-                                $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is on '.$day.', '.$date.' at '.$time.'. Which is in '.$days.' days ');
-                        }
+                  global $attendance;
 
-                        elseif ($hours > 0 && $days == 0)
-                        {
-                                 $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is today at '.$time.' in '.$hours.' hours');
-                        }
+                          //confirming yes
+                           if($data->message == "!confirm yes")
+                           {
 
-                        else
+                                  //checks to see if name is already on the list of those attending
+                                   if ($attendance[$data->nick] == 1)
+                                   {
+                                         $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." I've already confirmed you as at    tending");
+                                          print_r($attendance);
+                                          return;
+                                   }
 
-                                $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next dcs meeting is today, in '.$mins.' minutes! \o/');
 
-                }
+                                  //first time responder saying "yes"
+                                   else
+                              {
+                                           $attendance[$data->nick] = 1;
+                                           $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You have been confirmed as att    ending");
+                                           print_r($attendance);
+                                  }
 
-                function hash($irc, $data)
+                         }
+
+
+                          //confirming not attending
+                          if ($data->message == "!confirm no")
+                           {
+                                   //checks to see if the person is already on the list of not attending
+                                   if ($attendance[$data->nick] == 0)
+                                   {
+
+                                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You don't need to tell us twice     that you're not coming");
+                                          print_r($attendance);
+                                          return;
+                                   }
+
+
+                                   //first time responder saying "no"
+                                  else
+                                  {
+                                          $attendance[$data->nick] = 0;
+                                          $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You have been confirmed as not     attending");
+                                          print_r($attendance);
+                                  }
+                          }
+
+
+                               //lists those confirmed as attending or not attending
+                                   if ($data->message == "!confirm attendance")
+                                   {
+                                           $yes = "";
+                                           $no = "";
+
+                                          if (empty($attendance))
+                                          {
+                                                  $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "No one has responded whether or not     they are going");
+                                          }
+
+                                          elseif (in_array(1, $attendance) && !in_array(0, $attendance))
+                                          {
+                                                  foreach (array_keys($attendance) as $key)
+                                                  {
+                                                          $yes .= $key." ";
+                                                  }
+
+                                                  $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Attending the next DCS meeting: ".$y    es." No one has responded no at this time.");
+                                                  print_r($attendance);
+                                          }
+
+                                          elseif (in_array(0, $attendance) && !in_array(1, $attendance))
+                                          {
+                                                  foreach (array_keys($attendance) as $key)
+                                                  {
+                                                          $no .= $key." ";
+		                                          }
+
+                                                  $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Bailing on the next DCS meeting: ".$    no." No one has responded yes at this time.");
+                                                  print_r($attendance);
+                                          }
+
+                                          else
+                                          {
+                                                   foreach (array_keys($attendance) as $key)
+                                                   {
+                                                          if ($attendance[$key] == 1)
+                                                          {
+                                                                  $yes .= $key." ";
+                                                          }
+
+                                                          if ($attendance[$key] == 0)
+                                                          {
+                                                                  $no .= $key." ";
+                                                          }
+
+                                           $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Attending the next DCS meeting: ".$yes);
+                                           $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Bailing on the next DCS meeting: ".$no);
+
+                                                  }
+                                         }
+
+                                           print_r($attendance);
+                                   }
+
+
+                           //clears the lists
+                       if ($data->message == "!confirm cleared")
+                          {
+                                 if ($data->nick == "ScooterAmerica")
+                                 {
+                                         foreach ($attendance as $i => $value)
+                                         {
+                                                 unset($attendance[$i]);
+                                         }
+
+                                         $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "The lists are now blank");
+
+                                         print_r($attendance);
+                                 }
+
+                                 if ($data->nick != "ScooterAmerica")
+                                 {
+                                         return;
+                                 }
+                             }
+
+
+                 //will only return if $data->message doesnt match one of the above parameters (this is to avoid calling this function accid    entally)
+                           else
+                                  return;
+                   }
+	
+	               function hash($irc, $data)
                 {
                         $str = $data->message;
                         $hashed = substr($str, 6);
