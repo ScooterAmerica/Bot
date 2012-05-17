@@ -231,10 +231,10 @@
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'That man is evil');
 		}
 
-	        function doit($irc, $data)
-                {
+	    function doit($irc, $data)
+        {
 		        $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'Do it for you, not for me');
-	        }
+		}
 
 		function twss($irc, $data)
 		{
@@ -246,6 +246,28 @@
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': ping!');
 		}
 
+		function googleIt($irc, $data)
+                {
+			$search = $data->message;
+			$google = substr($search, 8);
+			$googles = str_word_count($google, 1);
+
+			$words = "";
+			if(str_word_count($google, 0) > 1)
+			{
+				foreach ($googles as $word)
+				{
+					$words .= $word."+";
+				}
+
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Your result: https://www.google.com/#q=".$words);
+			}
+
+			else
+			{
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Your result: https://www.google.com/#q=".$google);
+			}
+		}
 
 //DCS Functions
 
@@ -707,6 +729,7 @@
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!insult', $bot, 'mean');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drink', $bot, 'drinking_game');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!urban', $bot, 'urban_dictionary');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!google', $bot, 'googleIt');
 
 	//bot actions
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!quit', $bot, 'quit');
@@ -731,5 +754,5 @@
 
 
 	$irc->listen();
-        $irc->disconnect();
+    $irc->disconnect();
 ?>
