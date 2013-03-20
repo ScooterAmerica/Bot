@@ -8,13 +8,12 @@
 	include_once('dcsmeetings/attendancelist.txt');
 	include_once('dcsmeetings/location.txt');
 	include_once('dcsmeetings/topic.txt');
-
+	include_once('dcsmeetings/meetingDate.txt');
 
   class mybot
 {
 	static $topic = "";
 	static $location = "";	
-//	static $target = null;
 
 	//quit function
         function quit(&$irc, &$data)
@@ -59,7 +58,6 @@
 				}
 			}
 		}
-
 
 		//make the bot say something in the channel
 		function query(&$irc, &$data)
@@ -387,9 +385,9 @@
 	/*keep a note/notes of something..like a reminder function except saved in a file forever. Notes are saved in a file named by the users hostname.  This way if their nick changes the bot will still be able to find the notes file associated with them.*/
 		function note($irc, $data)
 		{
-			$revokePrivs = array("dcs-7597AF00.com", "dcs-74F5905A.deadcodersociety.org", "dcs-8ECBE58B.trevorparker.com", "dcs-C90ABACF.compywiz.com");
+			$revokePrivs = array("NotBot", "AakashBot", "VinceTron", "neilforobot");
 
-			if(in_array($data->host, $revokePrivs))
+			if(in_array($data->nick, $revokePrivs))
 			{
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Your note privelages have been revoked");
 			}
@@ -492,7 +490,7 @@
 						break;
 
 					case "meetings":
-						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !dcsmeeting, !topic <topic(s)>, !location <location(s)>.");
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !setmeeting <date(yyyy-mm-dd)> <time(00:00)>, !dcsmeeting, !topic <topic(s)>, !location <location(s)>.");
 						break;
 
 					case "confirm":
@@ -543,81 +541,118 @@
 		}
 
 //DCS Functions
+	//This function allows a user to set a meeting date right in the IRC channel.
+	function setNextMeetingDate ($irc, $data)
+	{
+		if ($data->message == "!setmeeting over")
+		{
+			$meetingOver = fopen("dcsmeetings/meetingDate.txt", "w");
+			fclose($meetingOver);
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Meeting Schedule Cleared");
+		}
 
-	        //countdown to next meeting (working on making this able to be set via a command in the IRC channel.)
-                function countdown($irc, $data)
-                {
-                	global $attendance;	
-			global $location;
-			global $topic;
-			global $target;
-	
-                        date_default_timezone_set('America/New_York');
+		else
+		{//regex to check for proper date and time formats (yyyy-mm-dd, 00:00)
+			if (preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $data->messageex[1]) &&
+			preg_match('/^(0?\d|1\d|2[0-3]):[0-5]\d$/', $data->messageex[2]))
+			{
+				$meetingDate = strtotime(date('Y-m-d G:i', strtotime(substr($data->message, 12))));
+				$date = date('D Y-m-d', strtotime($data->messageex[1]));
+				$meetingTime = $data->messageex[2];
 
-                        $date = "1.11.2013";
-                        $day = "Friday";
-                        $time = "7:30 pm";
-
-			$target = mktime(19, 30, 0, 1, 11, 2013, 0);
-                        $seconds_away = $target-time();
-                        
-			$days = (int)($seconds_away/86400);
-                        $hours = (int)(($seconds_away-($days*86400))/3600);
-			$mins = (int)(($seconds_away-($days*86400)-($hours*3600))/60);
-
-                        if ($target != null)
-                        {
-				//checks how much time is left and displays it.
-				if ($days > 0 || $hours > 0 || $mins > 0)
+				if ($meetingDate > time())
 				{
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'dcs: The next meeting is on '.$day.', '.$date.' at '.$time.'. Which is '.$days.' day(s), '.$hours." hour(s), and ".$mins." minute(s) from now.");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "The next meeting has been set for ".$date." at ".$meetingTime.".");
+
+					//write the date and time to a file for the dcsmeeting function.
+					$dcsMeeting = fopen("dcsmeetings/meetingDate.txt", "w");
+					fwrite($dcsMeeting, $date."\r\n");
+					fwrite($dcsMeeting, $meetingTime."\r\n");
+					fwrite($dcsMeeting, $meetingDate);
+					fclose($dcsMeeting);
+
+					$this->countDownToNextMeeting($irc, $data);
 				}
 
 				else
 				{
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The meeting has started or is already over');
-					return;
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "That Date has already passed");
 				}
-				
-				//these next few functions check the topic and location that is set for the meeting and displays it
-				$top = fopen("dcsmeetings/topic.txt", "r");
-				$currentTop = fgets($top);		
-
-				if(empty($currentTop))
-				{
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic undecided");
-				}
-
-				else
-				{
-					$topic = $currentTop;
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic: ".$topic);
-				}
-
-				$place = fopen("dcsmeetings/location.txt", "r");
-				$currentLoc = fgets($place);
-
-				if(empty($currentLoc))
-				{
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location not set");
-				}
-				else
-				{
-					$location = $currentLoc;
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location: ".$location);
-			
-				}
-
-				fclose($list);
-				fclose($place);			
 			}
-                        
+
 			else
 			{
-                        	$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'The next DCS meeting has not yet been scheduled');
- 			}
-		}   	
-	
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Invalid Format. Please use 'yyyy-mm-dd' and '00:00 (24 hour clock)' for date and time formats respectively.");
+			}
+		}
+
+	}
+
+	//countdown to next meeting
+	function countDownToNextMeeting ($irc, $data)
+	{
+		$meetingInfo = file("dcsmeetings/meetingDate.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+		if (empty($meetingInfo))
+		{
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "There are no DCS meetings currently scheduled");
+		}
+
+		else
+		{	//calculate the time left from now until the set date and time.
+			$date = $meetingInfo[0];
+			$meetingTime = $meetingInfo[1];
+			$meetingDate = $meetingInfo[2];
+			$timeUntilMeeting = abs($meetingDate - time());
+
+			$daysLeft = (int)($timeUntilMeeting/86400);
+			$hoursLeft = (int)(($timeUntilMeeting-($daysLeft*86400))/3600);
+			$minsLeft = (int)(($timeUntilMeeting-($daysLeft*86400)-($hoursLeft*3600))/60);
+
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "The next scheduled meeting is on ".$date." at ".$meetingTime.". Which is in ".$daysLeft." day(s), ".$hoursLeft." hour(s), and ".$minsLeft." minute(s).");
+
+			$this->checkTopicAndLocation($irc, $data); //call the function to check the location and topic for the meeting
+		}
+	}
+
+	function checkTopicAndLocation ($irc, $data)
+	{
+		global $location;
+		global $topic;
+
+		//these next few functions check the topic and location that is set for the meeting and displays it
+		$top = fopen("dcsmeetings/topic.txt", "r");
+		$currentTop = fgets($top);		
+
+		if(empty($currentTop))
+		{
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic undecided");
+		}
+
+		else
+		{
+			$topic = $currentTop;
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic: ".$topic);
+		}
+
+		$place = fopen("dcsmeetings/location.txt", "r");
+		$currentLoc = fgets($place);
+
+		if(empty($currentLoc))
+		{
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location not set");
+		}
+
+		else
+		{
+			$location = $currentLoc;
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location: ".$location);
+		}
+
+		fclose($list);
+		fclose($place);
+	}
+
 	//topic function to set topic for meetings
 	function meeting_Topic($irc, $data)
 	{            
@@ -716,7 +751,7 @@
 	                }
 
 			/*changes location and writes back to file. Bot creates a google maps link using the address its given. It then
-feeds the link into a script that hits Google's URL shortener api and records that as the location*/
+			feeds the link into a script that hits Google's URL shortener api and records that as the location*/
                         else
                          {
 				$place = fopen("dcsmeetings/location.txt", "w");
@@ -998,10 +1033,8 @@ user they have already responded, if the answer is different (i.e. yes to no or 
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!search.python ([_\w]+)', $bot, 'python_search');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!search.haskell ([_\w]+)', $bot, 'haskell_search');
 
-
 	//espn scores(temp)
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!scores ([_\w]+)', $bot, 'scoresTemp');
-
 
 	//greet & leave responses
 	$irc->registerActionhandler(SMARTIRC_TYPE_KICK, '.*', $bot, 'kickResponse');
@@ -1011,9 +1044,9 @@ user they have already responded, if the answer is different (i.e. yes to no or 
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!part', $bot, 'peace');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!join', $bot, 'joinChannel');
 
-
 	//dcs meeting functions
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!dcsmeeting', $bot, 'countdown');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!setmeeting', $bot, 'setNextMeetingDate');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!dcsmeeting', $bot, 'countDownToNextMeeting');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!confirm', $bot, 'meeting_List');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!topic\b', $bot, 'meeting_Topic');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL,'^!location\b', $bot, 'meeting_Location');
@@ -1040,21 +1073,6 @@ user they have already responded, if the answer is different (i.e. yes to no or 
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!superburn ([_\w]+)', $bot, 'superBurn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^\b!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
-
-	/*Connection info removed for privacy*/
-	$irc->connect('');
-	$irc->login('');
-	
-	/*
-	//freenode connect/login
-	$irc->connect('');
-	$irc->login('');
-	*/
-        
-	 //channel join
- //      $irc->join(array(''));
-         $irc->join(array(''));
-
 
 	$irc->listen();
         $irc->disconnect();
