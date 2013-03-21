@@ -1,7 +1,8 @@
 <?php
 
-/*Inlude Statements
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Include Statements
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	include_once('SmartIRC.php');
 	include_once('SmartIRC/defines.php');
 	include_once('SmartIRC/irccommands.php');
@@ -12,25 +13,25 @@
 	include_once('dcsmeetings/location.txt');
 	include_once('dcsmeetings/topic.txt');
 	include_once('dcsmeetings/meetingDate.txt');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  class mybot {
+  Basic Bot Functions
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+class mybot {
 
-/*Basic Bot Functions
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	//quit function
+	// quit function
 	function quit(&$irc, &$data) {
 		if ($data->nick == "ScooterAmerica") {
 			$irc->disconnect();
 		}
 
-		//quit protection
+		// quit protection
 		else {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': No, i dont think i will.');
 		}
 	}
 
-	//leave a channel
+	// leave a channel
 	function peace($irc, $data) {
 		if ($data->nick == "ScooterAmerica") {
 			if(isset($data->messageex[1])) {
@@ -40,7 +41,7 @@
 		}
 	}
 
-	//join a channel
+	// join a channel
 	function joinChannel($irc, $data) {
 		if ($data->nick == "ScooterAmerica") {
 			if(isset($data->messageex[1])) {
@@ -50,7 +51,7 @@
 		}
 	}
 
-	//make the bot say something in the channel
+	// make the bot say something in the channel
 	function query(&$irc, &$data) {
 		$newmsg = trim(substr($data->message, 5));
 
@@ -58,14 +59,14 @@
 		$irc->message(SMARTIRC_TYPE_CHANNEL, '#dcs', $newmsg);	
 	}
 
-	//auto rejoin
+	// auto rejoin
 	function kickResponse(&$irc, &$data) {
-		//when kicked
+		// when kicked
 		$irc->join(array('#jeff','#dcs'));
 		return;
 	}
 
-	//join greeting
+	// join greeting
 	function onjoin_greeting(&$irc, &$data) {
 		// don't greet self
 		if ($data->nick == $irc->_nick) {
@@ -77,10 +78,10 @@
 		}
 	}
 
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*api libraries
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+  API Libraries
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	function api($irc, $data) {
 		$api = trim(substr($data->message, 5));
 		$apiLibraries = array("java"=>" http://docs.oracle.com/javase/1.5.0/docs/api/", "php"=>" http://php.net/manual/en/book.spl.php", "haskell"=>" http://www.haskell.org/hoogle/", "python"=>" http://docs.python.org/library/", "perl"=>" http://perldoc.perl.org/index-language.html");
@@ -109,7 +110,7 @@
 		}
 	}
 
-	//search within a specific api library
+	// search within a specific api library
 	function php_search($irc, $data) {
 
 		// cuts off the trigger word and counts the remaining words to determine if the foreach loop is needed
@@ -118,7 +119,7 @@
 		$params = "";
 
 		if(str_word_count($term, 1) > 1) {
-			//adds a "+" in between multiple words to create a valid hyperlink
+			// adds a "+" in between multiple words to create a valid hyperlink
 			foreach ($terms as $values) {
 				$params .= $values."+";
 			}
@@ -207,15 +208,17 @@
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' http://www.haskell.org/hoogle/?hoogle='.$term5);		
 		}
 	}
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*espn scores
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+  ESPN Scores
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	function scoresTemp($irc, $data) {
 		$team = trim(substr($data->message, 8));
 		$score = array("ncaa" => " http://scores.espn.go.com/ncb/scoreboard", "nba" => " http://espn.go.com/nba/scoreboard", "nfl" => " http://scores.espn.go.com/nfl/scoreboard", "nhl" => " http://scores.espn.go.com/nhl/scoreboard", "mlb" => " http://espn.go.com/mlb/scoreboard");
 
-		/* The return here is a link to specific sports sections of ESPN.  In the future you will be able to specify what score of what game you wish to see and the return will be the teams playing, the score, and other necessary info such as period, time remaining. etc.*/
+		/* The return here is a link to specific sports sections of ESPN. In the future you will be able to specify what score of
+		what game you wish to see and the return will be the teams playing, the score, and other necessary info such as period, 
+		time remaining. etc.*/
 
 		switch($team) {
 			case "ncaa":
@@ -239,10 +242,10 @@
 				break;
 		}
 	}
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*triggers (talk)
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+  Triggers(talk)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	function neilforoshan($irc, $data) {
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'That man is evil');
 	}
@@ -259,13 +262,13 @@
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': ping!');
 	}
 
-	//creates a md5 hash of a string (via PM)
+	// creates a md5 hash of a string (via PM)
 	function hash($irc, $data) {
 		$hashed = trim(substr($data->message, 6));
 		$irc->message(SMARTIRC_TYPE_QUERY, $data->nick, md5($hashed));
 	}
 
-	//tells the bot to compliment a user(grabs a random response from the array)
+	// tells the bot to compliment a user(grabs a random response from the array)
 	function nice($irc, $data) {
 		$comp = array(" <--This guy. AWESOME", " You're the best", " Everyone is jealous of you", " You're amazing", " <--Next President");
 		$rand_comp = shuffle($comp);
@@ -280,7 +283,7 @@
 		}
 	}
 
-	//tells the bot to insult a user
+	// tells the bot to insult a user
 	function mean($irc, $data) {
 		$ins = array(" You remind me of Andrew", " You suck", " It would be better if you left", " You will never amount to anything", " Im just going to pretend like you arent here", " No one likes you");
 		$rand_ins = shuffle($ins);
@@ -293,16 +296,17 @@
 		}
 	}
 
+	// the function name says it all doesnt it?
 	function drinking_game($irc, $data) {
 		$nicks = array("ScooterAmerica", "stan_theman", "bro_keefe", "compywiz", "NellyFatFingers", "jico", "prg318", "ericoc", "OpEx");
 		$drinker = shuffle($nicks);
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $nicks[$drinker]);
 	}
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*Google
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	//provides the URL to a list of Google Search Responses
+  Google
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+	// provides the URL to a list of Google Search Responses
 	function googleIt($irc, $data) {
 		$google = trim(substr($data->message, 3));
 
@@ -330,7 +334,7 @@
 		}
 	}
 
-	//Equivalent to the "I'm feeling lucky" button on the Google Search page. In the future the bot will return a link to the first result on the page.
+	// Equivalent to the "I'm feeling lucky" button on the Google Search page. In the future the bot will return a link to the first result on the page.
 	function googleLucky($irc, $data) {
 		$google = trim(substr($data->message, 7));
 
@@ -356,12 +360,14 @@
 			}
 		}
 	}
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+  NOTES
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+	/*Keep a note/notes of something..like a reminder function except saved in a file forever. 
+	Notes are saved in a file named by the users hostname. This way if the user changes their
+	nick the bot will still be able to find the notes file associated with them.*/
 
-	/*NOTES: keep a note/notes of something..like a reminder function except saved in a file forever. Notes are saved in a file named by the users hostname. This way 
-		if their nick changes the bot will still be able to find the notes file associated with them.
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	function note($irc, $data) {
 		$revokePrivs = array("NotBot", "AakashBot", "VinceTron", "neilforobot");
 
@@ -374,7 +380,8 @@
 			$person = $data->host;
 
 			if ($data->message == "!notes") {
-				//checks to see if the file exists, if yes, open it and read out the notes line by line.
+
+				// checks to see if the file exists, if yes, open it and read out the notes line by line.
 				if (file_exists("Notes/".$person.".txt")) {
 					$currentNotes = fopen("Notes/".$person.".txt", "r");
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Your Notes:");
@@ -391,13 +398,13 @@
 				}
 			}
 
-			//clear all the notes and delete the file
+			// clear all the notes and delete the file
 			elseif ($data->message == "!notes clear") {
 				unlink("Notes/".$person.".txt");
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Your notes are gone. I hope you've got a good memory");
 			}
 
-			//if the file doesnt exist or they wish to add a note, bot looks for the file, creates if necessary, writes the note and closes the file.
+			// if the file doesnt exist or they wish to add a note, bot looks for the file, creates if necessary, writes the note and closes the file.
 			else {
 				$makeNote = fopen("Notes/".$person.".txt", "a+");
 				fwrite($makeNote, $note."\n");
@@ -408,15 +415,15 @@
 		}
 	}
 
-	//This function will allow you to delete a specific note in the file.
+	// This function will allow you to delete a specific note in the file.
 	function delNote($irc, $data) {
-		//creates and empty variable, finds the users notes file and opens it
+		// creates and empty variable, finds the users notes file and opens it
 		$writeNotes = "";
 		$person = $data->host;
 		$notes = file("Notes/".$person.".txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$i = $data->messageex[1];
 
-		//looks for the line number given and removes it.
+		// looks for the line number given and removes it.
 		if(is_numeric((int)$i) && $i > 0) {
 			$j = $i-1;
 			unset($notes[$j]);
@@ -435,10 +442,10 @@
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Not Valid Entry");
 		}
 	}
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*Users Manual
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+  Users Manual
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	// bot help manual (provides specific help for each of the bots functions) equivalent to the "man" pages in Linux
 	function help($irc, $data) {
 		$help = trim(substr($data->message, 6));
@@ -503,10 +510,10 @@
 			}
 		}
 	}
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*DCS Meeting Functions
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+  DCS Meeting Functions
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 static $topic = "";
 static $location = "";
 
@@ -548,7 +555,7 @@ static $location = "";
 
 	}
 
-	//countdown to next meeting (working on making this able to be set via a command in the IRC channel.)
+	// countdown to next meeting (working on making this able to be set via a command in the IRC channel.)
 	function countDownToNextMeeting ($irc, $data) {
 		$meetingInfo = file("dcsmeetings/meetingDate.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
@@ -576,7 +583,7 @@ static $location = "";
 		global $location;
 		global $topic;
 
-		//these next few functions check the topic and location that is set for the meeting and displays it
+		// these next few functions check the topic and location that is set for the meeting and displays it
 		$top = fopen("dcsmeetings/topic.txt", "r");
 		$currentTop = fgets($top);		
 
@@ -605,12 +612,12 @@ static $location = "";
 		fclose($place);
 	}
 
-	//topic function to set topic for meetings
+	// topic function to set topic for meetings
 	function meeting_Topic($irc, $data) {
 		global $topic;
 		$newTopic =  trim(substr($data->message, 7));
 
-		//makes the bot spit out the current topic set
+		// makes the bot spit out the current topic set
 		if ($data->message == "!topic") {
 			$top = fopen("dcsmeetings/topic.txt", "r");
 			$currentTop = fgets($top);
@@ -628,7 +635,7 @@ static $location = "";
 			}
                  }
 
-		//clears the topic in the file
+		// clears the topic in the file
 		elseif ($data->message == "!topic clear") {
 			$top = fopen("dcsmeetings/topic.txt", "w");
 			$topic = "";
@@ -639,7 +646,7 @@ static $location = "";
 			fclose($top);
 		}
 
-		//code to run to change the topic (only ever one entry in the file)
+		// code to run to change the topic (only ever one entry in the file)
 		else {
 			$top = fopen("dcsmeetings/topic.txt", "w");
 
@@ -651,20 +658,20 @@ static $location = "";
 		}
 	}
 
-	//set the location of each DCS meeting
+	// set the location of each DCS meeting
 	function meeting_Location($irc, $data) {
-		//stores the meeting location
+		// stores the meeting location
 		global $location;
 
 		$newLoc = trim(substr($data->message, 10));
 		$changeLoc = str_word_count($newLoc, 1, "0123456789");
 
-		//used to ask for meeting location
+		// used to ask for meeting location
 		if($data->message == "!location") {
 			$place = fopen("dcsmeetings/location.txt", "r");
 			$currentLoc = fgets($place);
 
-			//checks if the file is empty
+			// checks if the file is empty
 			if(empty($currentLoc)) {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location not set");
 				fclose($place); 
@@ -678,7 +685,7 @@ static $location = "";
 			}
 		}
 
-		//clears the file location
+		// clears the file location
 		elseif ($data->message == "!location clear") {
 			$place = fopen("dcsmeetings/location.txt", "w");
 			$location = "";
@@ -706,7 +713,7 @@ static $location = "";
 			// Create new API instance
 			$google = new GoogleURLAPI();
 
-			//Shorten URL
+			// Shorten URL
 			$shortLocation = $google->shorten($mapLoc);
 			$location = $shortLocation;
 
@@ -717,12 +724,12 @@ static $location = "";
 		}
 	}
 
-	//function to keep a list of those who will be and wont be attending meetings
+	// function to keep a list of those who will be and wont be attending meetings
 	function meeting_List($irc, $data) {
 		$response = $data->messageex[1];
 		switch($response) {
-			/*
-			The yes and no cases, the bot opens the file, first checks to see if there is a response from that user,
+
+			/*The yes and no cases, the bot opens the file, first checks to see if there is a response from that user,
 			if not, the bot will add the users response, if the user already responded and it matches their current response, the bot informs the 
 			user they have already responded, if the answer is different (i.e. yes to no or vice versa), the bot will erase the first response and record the new one.
 			*/
@@ -796,7 +803,7 @@ static $location = "";
 				}
 			break;
 
-			//reads out all the user reponses with who said yes and who said no
+			// reads out all the user reponses with who said yes and who said no
 			case "attendance":
 				$names = file_get_contents("dcsmeetings/attendancelist.txt");
 
@@ -815,17 +822,17 @@ static $location = "";
 				}
 			break;
 
-			//clears the contents of the file thereby clearing the list.
+			// clears the contents of the file thereby clearing the list.
 			case "cleared":
 				file_put_contents("dcsmeetings/attendancelist.txt", NULL);
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Lists cleared");
 			break;
 		}
 	}
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*triggers (actions)
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+  Triggers(actions)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 		function burn($irc, $data) {
 			$short = trim(substr($data->message, 6));
 
@@ -859,7 +866,7 @@ static $location = "";
 			}
 		}
 
-		//gives operator status to a user (bot must have ops already to do this)
+		// gives operator status to a user (bot must have ops already to do this)
 		function opMe(&$irc, &$data) {
 			$dcs = array("ScooterAmerica", "compywiz", "bro_keefe", "stan_theman", "jico", "NellyFatFingers", "prg318", "ericoc", "OpEx");
 
@@ -874,69 +881,66 @@ static $location = "";
 			}
 		}
 
-		//makes the decision for us so we dont have to
+		// makes the decision for us so we dont have to
 		function straws($irc, $data) {
 			$nicks = array(" ScooterAmerica", " stan_theman", " bro_keefe", " compywiz", " NellyFatFingers", " jico", " prg318", " ericoc", " OpEx");
 			$rand_nick = shuffle($nicks);
 
 			$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'hands out the straws.' .$nicks[$rand_nick]. ' got the short straw.');
 		}
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-
 }
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Bot Settings
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
     $bot = &new mybot();
     $irc = &new Net_SmartIRC();
     $irc->setDebug(SMARTIRC_DEBUG_ALL);
     $irc->setUseSockets(FALSE);
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-//bot users manual
+  Bot Users Manual
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!help\b', $bot, 'help');     
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-//api libraries
+  API Libraries
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!api ([_\w]+)', $bot, 'api');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!search.php ([_\w]+)', $bot, 'php_search');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!search.perl ([_\w]+)', $bot, 'perl_search');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!search.cpan ([_\w]+)', $bot, 'cpan_search');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!search.python ([_\w]+)', $bot, 'python_search');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!search.haskell ([_\w]+)', $bot, 'haskell_search');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-//espn scores(temp)
+  ESPN Scores(temp)
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!scores ([_\w]+)', $bot, 'scoresTemp');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-//Basic Functions
-
-//greet & leave responses
+  Basic Functions
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+	// greet & leave responses
 	$irc->registerActionhandler(SMARTIRC_TYPE_KICK, '.*', $bot, 'kickResponse');
         $irc->registerActionhandler(SMARTIRC_TYPE_JOIN, '.*', $bot, 'onjoin_greeting');
 
-//part and join
+	// part and join
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!part', $bot, 'peace');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!join', $bot, 'joinChannel');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-//DCS Meeting Functions
+  DCS Meeting Functions
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!setmeeting', $bot, 'setNextMeetingDate');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!dcsmeeting', $bot, 'countDownToNextMeeting');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!confirm', $bot, 'meeting_List');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!topic\b', $bot, 'meeting_Topic');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL,'^!location\b', $bot, 'meeting_Location');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-//bot talk
+  Bot Talk
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '4chan', $bot, 'neilforoshan');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, 'doit', $bot, 'doit');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, 'twss', $bot, 'twss');
@@ -951,15 +955,33 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!notes', $bot, 'note');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!delnote', $bot, 'delNote');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!wakeup', $bot, 'wakeUp');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-//bot actions
+  Bot Actions
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!quit', $bot, 'quit');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!burn ([_\w]+)', $bot, 'burn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!superburn ([_\w]+)', $bot, 'superBurn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^\b!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Connection Properties
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+	// DCS IRC connect/login
+	$irc->connect('ssl://irc.deadcodersociety.org', '6697');
+	$irc->login('AakashBot', 'Net_SmartIRC Client '.SMARTIRC_VERSION.'(aakashBot.php)', '0');
+
+/*	
+	// freenode connect/login
+	$irc->connect('chat.freenode.net', '6667');
+	$irc->login('AakashBot', 'Net_SmartIRC Client '.SMARTIRC_VERSION.'(aakashBot.php)', '0');
+*/
+
+	// channel join
+	$irc->join(array('#jeff', '#dcs', '#finance'));
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+$irc->listen();
+$irc->disconnect();
 ?>
