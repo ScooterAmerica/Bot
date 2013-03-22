@@ -84,7 +84,13 @@ class mybot {
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	function api($irc, $data) {
 		$api = trim(substr($data->message, 5));
-		$apiLibraries = array("java"=>" http://docs.oracle.com/javase/1.5.0/docs/api/", "php"=>" http://php.net/manual/en/book.spl.php", "haskell"=>" http://www.haskell.org/hoogle/", "python"=>" http://docs.python.org/library/", "perl"=>" http://perldoc.perl.org/index-language.html");
+		$apiLibraries = array(
+				"java"=>" http://docs.oracle.com/javase/1.5.0/docs/api/", 
+				"php"=>" http://php.net/manual/en/book.spl.php", 
+				"haskell"=>" http://www.haskell.org/hoogle/",
+				"python"=>" http://docs.python.org/library/",
+				"perl"=>" http://perldoc.perl.org/index-language.html"
+				);
 
 		// switch statement to determine which api library to return to the user
 		switch($api) {
@@ -214,7 +220,13 @@ class mybot {
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	function scoresTemp($irc, $data) {
 		$team = trim(substr($data->message, 8));
-		$score = array("ncaa" => " http://scores.espn.go.com/ncb/scoreboard", "nba" => " http://espn.go.com/nba/scoreboard", "nfl" => " http://scores.espn.go.com/nfl/scoreboard", "nhl" => " http://scores.espn.go.com/nhl/scoreboard", "mlb" => " http://espn.go.com/mlb/scoreboard");
+		$score = array(
+			"ncaa" => " http://scores.espn.go.com/ncb/scoreboard",
+			"nba" => " http://espn.go.com/nba/scoreboard",
+			"nfl" => " http://scores.espn.go.com/nfl/scoreboard",
+			"nhl" => " http://scores.espn.go.com/nhl/scoreboard",
+			"mlb" => " http://espn.go.com/mlb/scoreboard"
+			);
 
 		/* The return here is a link to specific sports sections of ESPN. In the future you will be able to specify what score of
 		what game you wish to see and the return will be the teams playing, the score, and other necessary info such as period, 
@@ -269,7 +281,7 @@ class mybot {
 	}
 
 	// tells the bot to compliment a user(grabs a random response from the array)
-	function nice($irc, $data) {
+	function beNice($irc, $data) {
 		$comp = array(" <--This guy. AWESOME", " You're the best", " Everyone is jealous of you", " You're amazing", " <--Next President");
 		$rand_comp = shuffle($comp);
 		$name = trim(substr($data->message, 12));
@@ -284,7 +296,7 @@ class mybot {
 	}
 
 	// tells the bot to insult a user
-	function mean($irc, $data) {
+	function beMean($irc, $data) {
 		$ins = array(" You remind me of Andrew", " You suck", " It would be better if you left", " You will never amount to anything", " Im just going to pretend like you arent here", " No one likes you");
 		$rand_ins = shuffle($ins);
 		$name = trim(substr($data->message, 8));
@@ -532,7 +544,7 @@ static $location = "";
 				$meetingTime = $data->messageex[2];
 
 				if ($meetingDate > time()) {
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "dcs: ".$data->nick." has set the next meeting for ".$date." at ".$meetingTime.".");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "dcs: Meeting set by ".$data->nick." for ".$date." at ".$meetingTime.".");
 
 					$dcsMeeting = fopen("dcsmeetings/meetingDate.txt", "w");
 					fwrite($dcsMeeting, $date."\r\n");
@@ -573,13 +585,13 @@ static $location = "";
 			$hoursLeft = (int)(($timeUntilMeeting-($daysLeft*86400))/3600);
 			$minsLeft = (int)(($timeUntilMeeting-($daysLeft*86400)-($hoursLeft*3600))/60);
 
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "The next scheduled meeting is on ".$date." at ".$meetingTime.". Which is in ".$daysLeft." day(s), ".$hoursLeft." hour(s), and ".$minsLeft." minute(s).");
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "dcs: The next scheduled meeting is on ".$date." at ".$meetingTime.". Which is in ".$daysLeft." day(s), ".$hoursLeft." hour(s), and ".$minsLeft." minute(s).");
 
 			$this->checkTopicAndLocation($irc, $data);
 		}
 	}
 
-	function checkTopicAndLocation ($irc, $data) {
+	function checkTopicAndLocation($irc, $data) {
 		global $location;
 		global $topic;
 
@@ -749,9 +761,9 @@ static $location = "";
 					$name = array_search($data->nick." said no", $attending);
 					unset($attending[$name]);
 					$newName = $data->nick." said yes\n";
+
 					$newResponse = fopen("dcsmeetings/attendancelist.txt", "w+");
 					fwrite($newResponse, $newName);
-
 					$response = "";
 					foreach ($attending as $value)
 					{
