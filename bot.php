@@ -282,7 +282,14 @@ class mybot {
 
 	// tells the bot to compliment a user(grabs a random response from the array)
 	function beNice($irc, $data) {
-		$comp = array(" <--This guy. AWESOME", " You're the best", " Everyone is jealous of you", " You're amazing", " <--Next President");
+		$compliments = array(
+				" <--This guy. AWESOME",
+				" You're the best",
+				" Everyone is jealous of you",
+				" You're amazing",
+				" <--Next President"
+				);
+
 		$rand_comp = shuffle($comp);
 		$name = trim(substr($data->message, 12));
 
@@ -291,26 +298,45 @@ class mybot {
 		}
 
 		else {
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $name.$comp[$rand_comp]);
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $name.$compliments[$rand_comp]);
 		}
 	}
 
 	// tells the bot to insult a user
 	function beMean($irc, $data) {
-		$ins = array(" You remind me of Andrew", " You suck", " It would be better if you left", " You will never amount to anything", " Im just going to pretend like you arent here", " No one likes you");
+		$insults = array(
+			" You remind me of Andrew",
+			" You suck",
+			" It would be better if you left",
+			" You will never amount to anything",
+			" Im just going to pretend like you arent here",
+			" No one likes you"
+			);
+
 		$rand_ins = shuffle($ins);
 		$name = trim(substr($data->message, 8));
 		if ($data->message == "!insult !roulette" || $data->message == "!insult !dino !roulette") {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' Stop trying to break things');
 		}
 		else {
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $name.$ins[$rand_ins]);
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $name.$insults[$rand_ins]);
 		}
 	}
 
 	// the function name says it all doesnt it?
 	function drinking_game($irc, $data) {
-		$nicks = array("ScooterAmerica", "stan_theman", "bro_keefe", "compywiz", "NellyFatFingers", "jico", "prg318", "ericoc", "OpEx");
+		$nicks = array(
+			"ScooterAmerica",
+			"stan_theman",
+			"bro_keefe",
+			"compywiz",
+			"NellyFatFingers",
+			"jico",
+			"prg318",
+			"ericoc",
+			"OpEx"
+			);
+
 		$drinker = shuffle($nicks);
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $nicks[$drinker]);
 	}
@@ -381,7 +407,12 @@ class mybot {
 	nick the bot will still be able to find the notes file associated with them.*/
 
 	function note($irc, $data) {
-		$revokePrivs = array("NotBot", "AakashBot", "VinceTron", "neilforobot");
+		$revokePrivs = array(
+				"NotBot",
+				"AakashBot",
+				"VinceTron",
+				"neilforobot"
+				);
 
 		if(in_array($data->nick, $revokePrivs)) {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Your note privelages have been revoked");
@@ -880,7 +911,17 @@ static $location = "";
 
 		// gives operator status to a user (bot must have ops already to do this)
 		function opMe(&$irc, &$data) {
-			$dcs = array("ScooterAmerica", "compywiz", "bro_keefe", "stan_theman", "jico", "NellyFatFingers", "prg318", "ericoc", "OpEx");
+			$dcs = array(
+				"ScooterAmerica",
+				"compywiz",
+				"bro_keefe",
+				"stan_theman",
+				"jico",
+				"NellyFatFingers",
+				"prg318",
+				"ericoc",
+				"OpEx"
+				);
 
 			if (in_array($data->nick, $dcs)) {
 				$nickname = $data->nick;
@@ -976,24 +1017,7 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!superburn ([_\w]+)', $bot, 'superBurn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^\b!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  Connection Properties
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	// DCS IRC connect/login
-	$irc->connect('ssl://irc.deadcodersociety.org', '6697');
-	$irc->login('AakashBot', 'Net_SmartIRC Client '.SMARTIRC_VERSION.'(aakashBot.php)', '0');
-
-/*	
-	// freenode connect/login
-	$irc->connect('chat.freenode.net', '6667');
-	$irc->login('AakashBot', 'Net_SmartIRC Client '.SMARTIRC_VERSION.'(aakashBot.php)', '0');
-*/
-
-	// channel join
-	$irc->join(array('#jeff', '#dcs', '#finance'));
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-
 $irc->listen();
 $irc->disconnect();
 ?>
