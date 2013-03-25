@@ -1,18 +1,21 @@
 <?php
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
   Include Statements
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	include_once('SmartIRC.php');
+	// SmartIRC
+	include_once('SmartIRC/SmartIRC.php');
 	include_once('SmartIRC/defines.php');
 	include_once('SmartIRC/irccommands.php');
 	include_once('SmartIRC/messagehandler.php');
 
-	include_once('Google/googleurlapi.php');
-	include_once('dcsmeetings/attendancelist.txt');
-	include_once('dcsmeetings/location.txt');
-	include_once('dcsmeetings/topic.txt');
-	include_once('dcsmeetings/meetingDate.txt');
+	// Files needed by Functions
+	include_once('Function_Files/Google/googleurlapi.php');
+	include_once('Function_Files/dcsmeetings/attendancelist.txt');
+	include_once('Function_Files/dcsmeetings/location.txt');
+	include_once('Function_Files/dcsmeetings/topic.txt');
+	include_once('Function_Files/dcsmeetings/meetingDate.txt');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   Basic Bot Functions
@@ -400,13 +403,13 @@ class mybot {
 	}
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  NOTES
+  Notes
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	/*Keep a note/notes of something..like a reminder function except saved in a file forever. 
 	Notes are saved in a file named by the users hostname. This way if the user changes their
 	nick the bot will still be able to find the notes file associated with them.*/
 
-	function note($irc, $data) {
+	function makeANote($irc, $data) {
 		$revokePrivs = array(
 				"NotBot",
 				"AakashBot",
@@ -425,8 +428,8 @@ class mybot {
 			if ($data->message == "!notes") {
 
 				// checks to see if the file exists, if yes, open it and read out the notes line by line.
-				if (file_exists("Notes/".$person.".txt")) {
-					$currentNotes = fopen("Notes/".$person.".txt", "r");
+				if (file_exists("Function_Files/Notes/".$person.".txt")) {
+					$currentNotes = fopen("Function_Files/Notes/".$person.".txt", "r");
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Your Notes:");
 
 					while(!feof($currentNotes)) {
@@ -441,15 +444,15 @@ class mybot {
 				}
 			}
 
-			// clear all the notes and delete the file
+			// clear all the notes and delete the File
 			elseif ($data->message == "!notes clear") {
-				unlink("Notes/".$person.".txt");
+				unlink("Function_Files/Notes/".$person.".txt");
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Your notes are gone. I hope you've got a good memory");
 			}
 
 			// if the file doesnt exist or they wish to add a note, bot looks for the file, creates if necessary, writes the note and closes the file.
 			else {
-				$makeNote = fopen("Notes/".$person.".txt", "a+");
+				$makeNote = fopen("Function_Files/Notes/".$person.".txt", "a+");
 				fwrite($makeNote, $note."\n");
 				fclose($makeNote);
 
@@ -459,11 +462,11 @@ class mybot {
 	}
 
 	// This function will allow you to delete a specific note in the file.
-	function delNote($irc, $data) {
+	function deleteANote($irc, $data) {
 		// creates and empty variable, finds the users notes file and opens it
 		$writeNotes = "";
 		$person = $data->host;
-		$notes = file("Notes/".$person.".txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$notes = file("Function_Files/Notes/".$person.".txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$i = $data->messageex[1];
 
 		// looks for the line number given and removes it.
@@ -471,7 +474,7 @@ class mybot {
 			$j = $i-1;
 			unset($notes[$j]);
 
-			$newNotes = fopen("Notes/".$person.".txt", "w+");				
+			$newNotes = fopen("Function_Files/Notes/".$person.".txt", "w+");				
 			foreach ($notes as $value) {
 				$writeNotes = $value."\r\n";
 				fwrite($newNotes, $writeNotes);
@@ -562,7 +565,7 @@ static $location = "";
 
 	function setNextMeetingDate ($irc, $data) {
 		if ($data->message == "!setmeeting over") {
-			$meetingOver = fopen("dcsmeetings/meetingDate.txt", "w");
+			$meetingOver = fopen("Function_Files/dcsmeetings/meetingDate.txt", "w");
 			fclose($meetingOver);
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Meeting Schedule Cleared");
 		}
@@ -575,9 +578,9 @@ static $location = "";
 				$meetingTime = $data->messageex[2];
 
 				if ($meetingDate > time()) {
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "dcs: Meeting set by ".$data->nick." for ".$date." at ".$meetingTime.".");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Meeting set by ".$data->nick." for ".$date." at ".$meetingTime.".");
 
-					$dcsMeeting = fopen("dcsmeetings/meetingDate.txt", "w");
+					$dcsMeeting = fopen("Function_Files/dcsmeetings/meetingDate.txt", "w");
 					fwrite($dcsMeeting, $date."\r\n");
 					fwrite($dcsMeeting, $meetingTime."\r\n");
 					fwrite($dcsMeeting, $meetingDate."\r\n");
@@ -600,7 +603,7 @@ static $location = "";
 
 	// countdown to next meeting (working on making this able to be set via a command in the IRC channel.)
 	function countDownToNextMeeting ($irc, $data) {
-		$meetingInfo = file("dcsmeetings/meetingDate.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$meetingInfo = file("Function_Files/dcsmeetings/meetingDate.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
 		if (empty($meetingInfo)) {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "There are no DCS meetings currently scheduled");
@@ -616,7 +619,7 @@ static $location = "";
 			$hoursLeft = (int)(($timeUntilMeeting-($daysLeft*86400))/3600);
 			$minsLeft = (int)(($timeUntilMeeting-($daysLeft*86400)-($hoursLeft*3600))/60);
 
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "dcs: The next scheduled meeting is on ".$date." at ".$meetingTime.". Which is in ".$daysLeft." day(s), ".$hoursLeft." hour(s), and ".$minsLeft." minute(s).");
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "dcs: Next Meeting scheduled for ".$date." at ".$meetingTime.". Which is in ".$daysLeft." day(s), ".$hoursLeft." hour(s), and ".$minsLeft." minute(s).");
 
 			$this->checkTopicAndLocation($irc, $data);
 		}
@@ -627,7 +630,7 @@ static $location = "";
 		global $topic;
 
 		// these next few functions check the topic and location that is set for the meeting and displays it
-		$top = fopen("dcsmeetings/topic.txt", "r");
+		$top = fopen("Function_Files/dcsmeetings/topic.txt", "r");
 		$currentTop = fgets($top);		
 
 		if(empty($currentTop)) {
@@ -639,7 +642,7 @@ static $location = "";
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic: ".$topic);
 		}
 
-		$place = fopen("dcsmeetings/location.txt", "r");
+		$place = fopen("Function_Files/dcsmeetings/location.txt", "r");
 		$currentLoc = fgets($place);
 
 		if(empty($currentLoc)) {
@@ -662,7 +665,7 @@ static $location = "";
 
 		// makes the bot spit out the current topic set
 		if ($data->message == "!topic") {
-			$top = fopen("dcsmeetings/topic.txt", "r");
+			$top = fopen("Function_Files/dcsmeetings/topic.txt", "r");
 			$currentTop = fgets($top);
 		
 			if(empty($currentTop)) {
@@ -678,9 +681,9 @@ static $location = "";
 			}
                  }
 
-		// clears the topic in the file
+		// clears the topic in the File
 		elseif ($data->message == "!topic clear") {
-			$top = fopen("dcsmeetings/topic.txt", "w");
+			$top = fopen("Function_Files/dcsmeetings/topic.txt", "w");
 			$topic = "";
 
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Cleared");
@@ -691,7 +694,7 @@ static $location = "";
 
 		// code to run to change the topic (only ever one entry in the file)
 		else {
-			$top = fopen("dcsmeetings/topic.txt", "w");
+			$top = fopen("Function_Files/dcsmeetings/topic.txt", "w");
 
 			$topic = $newTopic;
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "New Meeting Topic: ".$topic);
@@ -711,7 +714,7 @@ static $location = "";
 
 		// used to ask for meeting location
 		if($data->message == "!location") {
-			$place = fopen("dcsmeetings/location.txt", "r");
+			$place = fopen("Function_Files/dcsmeetings/location.txt", "r");
 			$currentLoc = fgets($place);
 
 			// checks if the file is empty
@@ -730,7 +733,7 @@ static $location = "";
 
 		// clears the file location
 		elseif ($data->message == "!location clear") {
-			$place = fopen("dcsmeetings/location.txt", "w");
+			$place = fopen("Function_Files/dcsmeetings/location.txt", "w");
 			$location = "";
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Cleared");
 
@@ -741,7 +744,7 @@ static $location = "";
 		/*changes location and writes back to file. Bot creates a google maps link using the address its given. It then
 		feeds the link into a script that hits Google's URL shortener api and records that as the location*/
 		else {
-			$place = fopen("dcsmeetings/location.txt", "w");
+			$place = fopen("Function_Files/dcsmeetings/location.txt", "w");
 			$loc = "";
 
 			if(str_word_count($newLoc, 0, "0123456789") >= 1) {
@@ -777,7 +780,7 @@ static $location = "";
 			user they have already responded, if the answer is different (i.e. yes to no or vice versa), the bot will erase the first response and record the new one.
 			*/
 			case "yes":
-				$attending = file("dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+				$attending = file("Function_Files/dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
 				if(!in_array($data->nick." said yes", $attending) && !in_array($data->nick." said no", $attending)) {
 					$attending = fopen("dcsmeetings/attendancelist.txt", "a+");
@@ -793,7 +796,7 @@ static $location = "";
 					unset($attending[$name]);
 					$newName = $data->nick." said yes\n";
 
-					$newResponse = fopen("dcsmeetings/attendancelist.txt", "w+");
+					$newResponse = fopen("Function_Files/dcsmeetings/attendancelist.txt", "w+");
 					fwrite($newResponse, $newName);
 					$response = "";
 					foreach ($attending as $value)
@@ -812,10 +815,10 @@ static $location = "";
 			break;
 
 			case "no":
-				$attending = file("dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+				$attending = file("Function_Files/dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
 				if(!in_array($data->nick." said no", $attending) && !in_array($data->nick." said yes", $attending)) {
-					$attending = fopen("dcsmeetings/attendancelist.txt", "a+");
+					$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "a+");
 					$name = $data->nick." said no";
 
 					fwrite($attending, $name."\n");
@@ -829,7 +832,7 @@ static $location = "";
 					unset($attending[$name]);
 					$newName = $data->nick." said no\n";
 
-					$newResponse = fopen("dcsmeetings/attendancelist.txt", "w+");
+					$newResponse = fopen("Function_Files/dcsmeetings/attendancelist.txt", "w+");
 					fwrite($newResponse, $newName);
 					$response = "";
 					foreach ($attending as $value) {
@@ -848,10 +851,10 @@ static $location = "";
 
 			// reads out all the user reponses with who said yes and who said no
 			case "attendance":
-				$names = file_get_contents("dcsmeetings/attendancelist.txt");
+				$names = file_get_contents("Function_Files/dcsmeetings/attendancelist.txt");
 
 				if(strlen($names) > 1) {
-					$attending = fopen("dcsmeetings/attendancelist.txt", "r");
+					$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "r");
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Responses so Far:");
 
 					while(!feof($attending)) {
@@ -867,7 +870,7 @@ static $location = "";
 
 			// clears the contents of the file thereby clearing the list.
 			case "cleared":
-				file_put_contents("dcsmeetings/attendancelist.txt", NULL);
+				file_put_contents("Function_Files/dcsmeetings/attendancelist.txt", NULL);
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Lists cleared");
 			break;
 		}
@@ -1003,11 +1006,18 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!compliment ([_\w]+)', $bot, 'nice');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!insult ([_\w]+)', $bot, 'mean');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drink', $bot, 'drinking_game');
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Google
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!g\b ([_\w]+)', $bot, 'googleIt');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!lucky ([_\w]+)', $bot, 'googleLucky');
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!notes', $bot, 'note');
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!delnote', $bot, 'delNote');
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!wakeup', $bot, 'wakeUp');
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Notes
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!notes', $bot, 'makeANote');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!delnote', $bot, 'deleteANote');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   Bot Actions
