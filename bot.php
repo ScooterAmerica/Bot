@@ -127,7 +127,7 @@ class mybot {
 		$terms = str_word_count($term, 1, '_()');
 		$params = "";
 
-		if(str_word_count($term, 1) > 1) {
+		if (str_word_count($term, 1) > 1) {
 			// adds a "+" in between multiple words to create a valid hyperlink
 			foreach ($terms as $values) {
 				$params .= $values."+";
@@ -147,7 +147,7 @@ class mybot {
 		$terms2 = str_word_count($term2, 1, '_()');
 		$params2 = "";
 
-		if(str_word_count($term2, 1) > 1) {
+		if (str_word_count($term2, 1) > 1) {
 			foreach ($terms2 as $values2) {
 				$params2 .= $values2."+";
 			}
@@ -166,7 +166,7 @@ class mybot {
 		$terms3 = str_word_count($term3, 1, '_()');
 		$params3 = "";
 
-		if(str_word_count($term3, 1) > 1) {
+		if (str_word_count($term3, 1) > 1) {
 			foreach($terms3 as $values3) {
 				$params3 .= $values3."+";
 			}
@@ -185,7 +185,7 @@ class mybot {
 		$terms4 = str_word_count($term4, 1, '_()');
 		$params4 = "";
 
-		if(str_word_count($term4, 1) > 1) {
+		if (str_word_count($term4, 1) > 1) {
 			foreach($terms4 as $values4) {
 				$params4 .= $values4."+";
 			}
@@ -318,9 +318,11 @@ class mybot {
 
 		$rand_ins = shuffle($ins);
 		$name = trim(substr($data->message, 8));
+
 		if ($data->message == "!insult !roulette" || $data->message == "!insult !dino !roulette") {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' Stop trying to break things');
 		}
+
 		else {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $name.$insults[$rand_ins]);
 		}
@@ -351,7 +353,7 @@ class mybot {
 	function googleIt($irc, $data) {
 		$google = trim(substr($data->message, 3));
 
-		if($data->message == "!g") {
+		if ($data->message == "!g") {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "There's nothing to Google");
 		}
 
@@ -359,7 +361,7 @@ class mybot {
 			$googles = str_word_count($google, 1);
 			$words = "";
 
-			if(str_word_count($google, 0) > 1) {
+			if (str_word_count($google, 0) > 1) {
 				foreach ($googles as $word) {
 					$words .= $word."+";
 				}
@@ -379,7 +381,7 @@ class mybot {
 	function googleLucky($irc, $data) {
 		$google = trim(substr($data->message, 7));
 
-		if($data->message == "!lucky" || $data->message == "!lucky ") {
+		if ($data->message == "!lucky" || $data->message == "!lucky ") {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "You're not lucky");
 		}
 
@@ -417,7 +419,7 @@ class mybot {
 				"neilforobot"
 				);
 
-		if(in_array($data->nick, $revokePrivs)) {
+		if (in_array($data->nick, $revokePrivs)) {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Your note privelages have been revoked");
 		}
 
@@ -470,7 +472,7 @@ class mybot {
 		$i = $data->messageex[1];
 
 		// looks for the line number given and removes it.
-		if(is_numeric((int)$i) && $i > 0) {
+		if (is_numeric((int)$i) && $i > 0) {
 			$j = $i-1;
 			unset($notes[$j]);
 
@@ -494,7 +496,7 @@ class mybot {
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	// bot help manual (provides specific help for each of the bots functions) equivalent to the "man" pages in Linux
 	function help($irc, $data) {
-		$help = trim(substr($data->message, 6));
+		$help = $data->messageex[1];
 
 		if ($data->message == "!help") {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' Please use "!help <botname>" for a list of features.');
@@ -598,7 +600,6 @@ static $location = "";
 			else
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Invalid Format. Please use 'yyyy-mm-dd' and '00:00 (24 hour clock)' for date and time formats respectively.");
 		}
-
 	}
 
 	// countdown to next meeting (working on making this able to be set via a command in the IRC channel.)
@@ -633,7 +634,8 @@ static $location = "";
 		$top = fopen("Function_Files/dcsmeetings/topic.txt", "r");
 		$currentTop = fgets($top);		
 
-		if(empty($currentTop)) {
+		// Topic
+		if (empty($currentTop)) {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic undecided");
 		}
 
@@ -642,10 +644,11 @@ static $location = "";
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic: ".$topic);
 		}
 
+		//Location
 		$place = fopen("Function_Files/dcsmeetings/location.txt", "r");
 		$currentLoc = fgets($place);
 
-		if(empty($currentLoc)) {
+		if (empty($currentLoc)) {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location not set");
 		}
 
@@ -668,7 +671,7 @@ static $location = "";
 			$top = fopen("Function_Files/dcsmeetings/topic.txt", "r");
 			$currentTop = fgets($top);
 		
-			if(empty($currentTop)) {
+			if (empty($currentTop)) {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic undecided");
 				fclose($top);
 			}
@@ -713,12 +716,12 @@ static $location = "";
 		$changeLoc = str_word_count($newLoc, 1, "0123456789");
 
 		// used to ask for meeting location
-		if($data->message == "!location") {
+		if ($data->message == "!location") {
 			$place = fopen("Function_Files/dcsmeetings/location.txt", "r");
 			$currentLoc = fgets($place);
 
 			// checks if the file is empty
-			if(empty($currentLoc)) {
+			if (empty($currentLoc)) {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location not set");
 				fclose($place); 
 			}
@@ -747,7 +750,7 @@ static $location = "";
 			$place = fopen("Function_Files/dcsmeetings/location.txt", "w");
 			$loc = "";
 
-			if(str_word_count($newLoc, 0, "0123456789") >= 1) {
+			if (str_word_count($newLoc, 0, "0123456789") >= 1) {
 				foreach ($changeLoc as $locs) {
 					$loc .= $locs."+";
 				}
@@ -782,7 +785,7 @@ static $location = "";
 			case "yes":
 				$attending = file("Function_Files/dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-				if(!in_array($data->nick." said yes", $attending) && !in_array($data->nick." said no", $attending)) {
+				if (!in_array($data->nick." said yes", $attending) && !in_array($data->nick." said no", $attending)) {
 					$attending = fopen("dcsmeetings/attendancelist.txt", "a+");
 					$name = $data->nick." said yes";
 					fwrite($attending, $name."\n");
@@ -817,7 +820,7 @@ static $location = "";
 			case "no":
 				$attending = file("Function_Files/dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-				if(!in_array($data->nick." said no", $attending) && !in_array($data->nick." said yes", $attending)) {
+				if (!in_array($data->nick." said no", $attending) && !in_array($data->nick." said yes", $attending)) {
 					$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "a+");
 					$name = $data->nick." said no";
 
@@ -853,7 +856,7 @@ static $location = "";
 			case "attendance":
 				$names = file_get_contents("Function_Files/dcsmeetings/attendancelist.txt");
 
-				if(strlen($names) > 1) {
+				if (strlen($names) > 1) {
 					$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "r");
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Responses so Far:");
 
