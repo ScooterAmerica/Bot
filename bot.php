@@ -9,13 +9,24 @@
 	include_once('SmartIRC/defines.php');
 	include_once('SmartIRC/irccommands.php');
 	include_once('SmartIRC/messagehandler.php');
-
-	// Files needed by Functions
+/*
+  Files Needed For Functions
+*/
+	// Google
 	include_once('Function_Files/Google/googleurlapi.php');
+
+	// DCS Meetings
 	include_once('Function_Files/dcsmeetings/attendancelist.txt');
 	include_once('Function_Files/dcsmeetings/location.txt');
 	include_once('Function_Files/dcsmeetings/topic.txt');
 	include_once('Function_Files/dcsmeetings/meetingDate.txt');
+
+	// ESPN Scores
+	include_once('Function_Files/Scores/mlbScores.php');
+	include_once('Function_Files/Scores/nbaScores.php');
+	include_once('Function_Files/Scores/ncaaScores.php');
+	include_once('Function_Files/Scores/nflScores.php');
+	include_once('Function_Files/Scores/nhlScores.php');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   Basic Bot Functions
@@ -30,12 +41,12 @@ class mybot {
 
 		// quit protection
 		else {
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': No, i dont think i will.');
+			return;
 		}
 	}
 
 	// leave a channel
-	function peace($irc, $data) {
+	function leaveChannel($irc, $data) {
 		if ($data->nick == "ScooterAmerica") {
 			if(isset($data->messageex[1])) {
 				$channel = $data->messageex[1];
@@ -55,7 +66,7 @@ class mybot {
 	}
 
 	// make the bot say something in the channel
-	function query(&$irc, &$data) {
+	function privateMessage($irc, $data) {
 		$newmsg = trim(substr($data->message, 5));
 
 		// text sent to channel
@@ -63,20 +74,20 @@ class mybot {
 	}
 
 	// auto rejoin
-	function kickResponse(&$irc, &$data) {
+	function kickResponse($irc, $data) {
 		// when kicked
 		$irc->join(array('#jeff','#dcs'));
 		return;
 	}
 
 	// join greeting
-	function onjoin_greeting(&$irc, &$data) {
+	function joinGreeting($irc, $data) {
 		// don't greet self
 		if ($data->nick == $irc->_nick) {
 			return;
 		}
 
-		if ($data->channel == '#dcs' && $data->nick == "neilforobot") {
+		if ($data->nick == "neilforobot") {
 			$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'glares at neilforobot');
 		}
 	}
@@ -221,39 +232,31 @@ class mybot {
 
   ESPN Scores
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	function scoresTemp($irc, $data) {
-		$team = trim(substr($data->message, 8));
-		$score = array(
-			"ncaa" => " http://scores.espn.go.com/ncb/scoreboard",
-			"nba" => " http://espn.go.com/nba/scoreboard",
-			"nfl" => " http://scores.espn.go.com/nfl/scoreboard",
-			"nhl" => " http://scores.espn.go.com/nhl/scoreboard",
-			"mlb" => " http://espn.go.com/mlb/scoreboard"
-			);
+	function espnScores($irc, $data) {
+		$sport = $data->messageex[1];
 
-		/* The return here is a link to specific sports sections of ESPN. In the future you will be able to specify what score of
-		what game you wish to see and the return will be the teams playing, the score, and other necessary info such as period, 
-		time remaining. etc.*/
+		/* This will grab the RSS off of ESPN for their Bottom line of scores. Returns the teams, score, and period/inning/etc.*/
 
-		switch($team) {
+		switch($sport) {
 			case "ncaa":
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.$score["ncaa"]);
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, `php Function_Files/Scores/ncaaScores.php`);
 				break;
 
 			case "nba":
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.$score["nba"]);
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, `php Function_Files/Scores/nbaScores.php`);
 				break;
 
 			case "nfl":
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.$score["nfl"]);
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, `php Function_Files/Scores/nflScores.php`);
 				break;
 
 			case "nhl":
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.$score["nhl"]);
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, `php Function_Files/Scores/nhlScores.php`);
 				break;
 
 			case "mlb":
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.$score["mlb"]);
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, `php Function_Files/Scores/mlbScores.php`);
+				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "FULL SCOREBOARD: http://scores.espn.go.com/mlb/scoreboard");
 				break;
 		}
 	}
@@ -545,11 +548,15 @@ class mybot {
 					break;
 	
 				case "AakashBot":
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Help Options: api | meetings | confirm | burn | notes | drawstraws | google | say | hash | insult | compliment | all");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Help Options: api | meetings | confirm | burn | notes | drawstraws | google | say | hash | insult | compliment | scores | all");
 					break;
 
 				case "notes":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !notes <your note>| !notes clear | !notes (view your notes) | !delnote <line #>");
+					break;
+
+				case "scores":
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !scores <league> (nfl, mlb, etc.)");
 					break;
 	
 				case "all":
@@ -973,19 +980,19 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!search.haskell ([_\w]+)', $bot, 'haskell_search');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  ESPN Scores(temp)
+  ESPN Scores
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!scores ([_\w]+)', $bot, 'scoresTemp');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!scores ([_\w]+)', $bot, 'espnScores');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  Basic Functions
+  Basic Bot Functions
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	// greet & leave responses
 	$irc->registerActionhandler(SMARTIRC_TYPE_KICK, '.*', $bot, 'kickResponse');
-        $irc->registerActionhandler(SMARTIRC_TYPE_JOIN, '.*', $bot, 'onjoin_greeting');
+        $irc->registerActionhandler(SMARTIRC_TYPE_JOIN, '.*', $bot, 'joinGreeting');
 
 	// part and join
-	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!part', $bot, 'peace');
+	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!part', $bot, 'leaveChannel');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!join', $bot, 'joinChannel');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
