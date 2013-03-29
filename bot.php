@@ -1035,23 +1035,7 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!superburn ([_\w]+)', $bot, 'superBurn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^\b!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  Connection Properties
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	// DCS IRC connect/login
-	$irc->connect('ssl://irc.deadcodersociety.org', '6697');
-	$irc->login('AakashBot', 'Net_SmartIRC Client '.SMARTIRC_VERSION.'(aakashBot.php)', '0');
-
-/*
-	// freenode connect/login
-	$irc->connect('chat.freenode.net', '6667');
-	$irc->login('AakashBot', 'Net_SmartIRC Client '.SMARTIRC_VERSION.'(aakashBot.php)', '0');
-*/
-
-	// channel join
-	$irc->join(array('#jeff', '#dcs'));
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 $irc->listen();
 $irc->disconnect();
 ?>
