@@ -25,6 +25,11 @@ API SEARCH
 	!api <language> - returns the url for the language entered. Currently only searches Java, PHP, Haskell, Python, Perl.
 	search <language><term> - will return the url for the api of the language (one of the above) for the term listed.
 
+SCORES
+	!scores <league> - will grab the current scores for the games that day for the league specified. The leagues set up
+	right now are NHL, NFL, NBA, NCAA Mens Basketball, MLB. Working on Soccer in the US and Euro Leagues as well as possibly Golf and 
+	NCAA Mens and Womens Volleyball.
+
 Other Miscellaneous Functions
 	!insult <nickname> - insults the nickname given.
 	!compliment <nickname> - compliments the nickname given.
