@@ -233,11 +233,9 @@ class mybot {
   ESPN Scores
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	function espnScores($irc, $data) {
-		$sport = $data->messageex[1];
-
 		/* This will grab the RSS off of ESPN for their Bottom line of scores. Returns the teams, score, and period/inning/etc.*/
-
-		switch($sport) {
+		$league = $data->messageex[1];
+		switch($league) {
 			case "ncaa":
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, `php Function_Files/Scores/ncaaScores.php`);
 				break;
@@ -282,7 +280,7 @@ class mybot {
 
 	// creates a md5 hash of a string (via PM)
 	function hash($irc, $data) {
-		$hashed = trim(substr($data->message, 6));
+		$hashed = $data->messageex[1];
 		$irc->message(SMARTIRC_TYPE_QUERY, $data->nick, md5($hashed));
 	}
 
@@ -1037,7 +1035,23 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!superburn ([_\w]+)', $bot, 'superBurn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^\b!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Connection Properties
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+	// DCS IRC connect/login
+	$irc->connect('ssl://irc.deadcodersociety.org', '6697');
+	$irc->login('AakashBot', 'Net_SmartIRC Client '.SMARTIRC_VERSION.'(aakashBot.php)', '0');
+
+/*
+	// freenode connect/login
+	$irc->connect('chat.freenode.net', '6667');
+	$irc->login('AakashBot', 'Net_SmartIRC Client '.SMARTIRC_VERSION.'(aakashBot.php)', '0');
+*/
+
+	// channel join
+	$irc->join(array('#jeff', '#dcs'));
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 $irc->listen();
 $irc->disconnect();
 ?>
