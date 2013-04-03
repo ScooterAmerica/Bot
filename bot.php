@@ -48,20 +48,14 @@ class mybot {
 	// leave a channel
 	function leaveChannel($irc, $data) {
 		if ($data->nick == "ScooterAmerica") {
-			if(isset($data->messageex[1])) {
-				$channel = $data->messageex[1];
-				$irc->part($channel);
-			}
+			$irc->part($data->messageex[1]);
 		}
 	}
 
 	// join a channel
 	function joinChannel($irc, $data) {
 		if ($data->nick == "ScooterAmerica") {
-			if(isset($data->messageex[1])) {
-				$channel = $data->messageex[1];
-				$irc->join($channel);
-			}
+			$irc->join($data->messageex[1]);
 		}
 	}
 
@@ -91,7 +85,6 @@ class mybot {
 			$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'glares at neilforobot');
 		}
 	}
-
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   API Libraries
@@ -132,7 +125,6 @@ class mybot {
 
 	// search within a specific api library
 	function php_search($irc, $data) {
-
 		// cuts off the trigger word and counts the remaining words to determine if the foreach loop is needed
 		$term = trim(substr($data->message, 12));
 		$terms = str_word_count($term, 1, '_()');
@@ -252,6 +244,9 @@ class mybot {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, `php Function_Files/Scores/nhlScores.php`);
 				break;
 
+			/* There are too many MLB scores for one IRC message so
+			the bot posts the ESPN MLB scoreboard link so users can
+			see scores not shown */
 			case "mlb":
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, `php Function_Files/Scores/mlbScores.php`);
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "FULL SCOREBOARD: http://scores.espn.go.com/mlb/scoreboard");
@@ -262,10 +257,6 @@ class mybot {
 
   Triggers(talk)
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	function neilforoshan($irc, $data) {
-		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'That man is evil');
-	}
-
         function doit($irc, $data) {
 	        $irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'Do it for you, not for me');
 	}
@@ -274,7 +265,7 @@ class mybot {
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'She said that! Yes?');
 	}
 
-	function myPing($irc, $data) {
+	function hilightTest($irc, $data) {
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': ping!');
 	}
 
@@ -342,8 +333,8 @@ class mybot {
 			"ericoc",
 			"OpEx"
 			);
-
 		$drinker = shuffle($nicks);
+
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $nicks[$drinker]);
 	}
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -574,6 +565,7 @@ static $location = "";
 		if ($data->message == "!setmeeting over") {
 			$meetingOver = fopen("Function_Files/dcsmeetings/meetingDate.txt", "w");
 			fclose($meetingOver);
+			
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Meeting Schedule Cleared");
 		}
 
@@ -602,8 +594,9 @@ static $location = "";
 				}
 			}
 
-			else
+			else {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Invalid Format. Please use 'yyyy-mm-dd' and '00:00 (24 hour clock)' for date and time formats respectively.");
+			}
 		}
 	}
 
@@ -635,11 +628,13 @@ static $location = "";
 		global $location;
 		global $topic;
 
-		// these next few functions check the topic and location that is set for the meeting and displays it
+		/* these next few functions check the topic and location
+		set for the meeting and displays them.*/
+
+		// Topic
 		$top = fopen("Function_Files/dcsmeetings/topic.txt", "r");
 		$currentTop = fgets($top);		
 
-		// Topic
 		if (empty($currentTop)) {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic undecided");
 		}
@@ -648,6 +643,7 @@ static $location = "";
 			$topic = $currentTop;
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic: ".$topic);
 		}
+		fclose($top);
 
 		//Location
 		$place = fopen("Function_Files/dcsmeetings/location.txt", "r");
@@ -661,15 +657,13 @@ static $location = "";
 			$location = $currentLoc;
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location: ".$location);
 		}
-
-		fclose($list);
 		fclose($place);
 	}
 
 	// topic function to set topic for meetings
 	function meeting_Topic($irc, $data) {
 		global $topic;
-		$newTopic =  trim(substr($data->message, 7));
+		$newTopic = trim(substr($data->message, 7));
 
 		// makes the bot spit out the current topic set
 		if ($data->message == "!topic") {
@@ -678,14 +672,11 @@ static $location = "";
 		
 			if (empty($currentTop)) {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic undecided");
-				fclose($top);
 			}
 
 			else {
 				$topic = $currentTop;
-
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "DCS meeting topic: ".$topic);
-				fclose($top);
 			}
                  }
 
@@ -697,7 +688,6 @@ static $location = "";
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Cleared");
 
 			fwrite($top, $topic);
-			fclose($top);
 		}
 
 		// code to run to change the topic (only ever one entry in the file)
@@ -708,8 +698,8 @@ static $location = "";
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "New Meeting Topic: ".$topic);
 
 			fwrite($top, $topic);
-			fclose($top);
 		}
+		fclose($top);
 	}
 
 	// set the location of each DCS meeting
@@ -728,14 +718,11 @@ static $location = "";
 			// checks if the file is empty
 			if (empty($currentLoc)) {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Location not set");
-				fclose($place); 
 			}
 
 			else {
 				$location = $currentLoc;
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "DCS meeting location: ".$location);
-
-				fclose($place);
 			}
 		}
 
@@ -746,7 +733,6 @@ static $location = "";
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Cleared");
 
 			fwrite($place, $location);
-			fclose($place); 
 		}
 
 		/*changes location and writes back to file. Bot creates a google maps link using the address its given. It then
@@ -774,8 +760,8 @@ static $location = "";
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "New Meeting Location: ".$location);
 
 			fwrite($place, $location);
-			fclose($place);
 		}
+		fclose($place);
 	}
 
 	// function to keep a list of those who will be and wont be attending meetings
@@ -921,7 +907,7 @@ static $location = "";
 		}
 
 		// gives operator status to a user (bot must have ops already to do this)
-		function opMe(&$irc, &$data) {
+		function opMe($irc, $data) {
 			$dcs = array(
 				"ScooterAmerica",
 				"compywiz",
@@ -935,9 +921,7 @@ static $location = "";
 				);
 
 			if (in_array($data->nick, $dcs)) {
-				$nickname = $data->nick;
-               			$channel = $data->channel;
-               			$irc->op($channel, $nickname);
+               			$irc->op($data->channel, $data->nick);
 			}	
 
 			else {
@@ -989,8 +973,8 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_KICK, '.*', $bot, 'kickResponse');
         $irc->registerActionhandler(SMARTIRC_TYPE_JOIN, '.*', $bot, 'joinGreeting');
 
-	// part and join
-	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!part', $bot, 'leaveChannel');
+	// leave and join
+	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!leave', $bot, 'leaveChannel');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!join', $bot, 'joinChannel');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1005,10 +989,9 @@ static $location = "";
 
   Bot Talk
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '4chan', $bot, 'neilforoshan');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, 'doit', $bot, 'doit');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, 'twss', $bot, 'twss');
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!me\b', $bot, 'myPing');	
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!me\b', $bot, 'hilightMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!say', $bot, 'query');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!hash', $bot, 'hash');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!compliment ([_\w]+)', $bot, 'nice');
@@ -1035,7 +1018,7 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!superburn ([_\w]+)', $bot, 'superBurn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^\b!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
-/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 $irc->listen();
 $irc->disconnect();
 ?>
