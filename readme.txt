@@ -35,5 +35,6 @@ Other Miscellaneous Functions
 	!compliment <nickname> - compliments the nickname given.
 	!g <term(s)> - returns link to Google search results
 	!lucky <term(s)> - Google click "I'm Feeling Lucky" button
-	(PM) !say <message> - makes AakashBot say the message in ‘#dcs’
+	(PM) !say <message> - makes the bot say a message in ‘#dcs’
 	(PM) !hash <text> - returns md5 hash of text sent
+	(PM) !invite <nickname> <channel> - invite a user to a specific channel. Also sends a message to that user.

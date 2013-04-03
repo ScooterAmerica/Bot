@@ -1,5 +1,4 @@
 <?php
-
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   Include Statements
@@ -537,7 +536,7 @@ class mybot {
 					break;
 	
 				case "AakashBot":
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Help Options: api | meetings | confirm | burn | notes | drawstraws | google | say | hash | insult | compliment | scores | all");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Help Options: all | api | burn | meetings | compliment | confirm | drawstraws | google | hash | insult | invite | notes | say | scores");
 					break;
 
 				case "notes":
@@ -547,7 +546,11 @@ class mybot {
 				case "scores":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !scores <league> (nfl, mlb, etc.)");
 					break;
-	
+
+				case "invite":
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !invite <nickname> <channel>");
+					break;
+
 				case "all":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "http://forum.deadcodersociety.org/index.php/topic,217.0.html");
 					break;			
@@ -873,69 +876,89 @@ static $location = "";
 
   Triggers(actions)
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-		function burn($irc, $data) {
-			$short = trim(substr($data->message, 6));
+	function burn($irc, $data) {
+		$short = trim(substr($data->message, 6));
 
-			if ($data->message == "!burn AakashBot") {
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You're not good enough to burn me");
-			}			
+		if ($data->message == "!burn AakashBot") {
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You're not good enough to burn me");
+		}			
 
-			elseif ($data->message == "!burn") {
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Burn who?");
-			}
-
-			else {
-				$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'gives the burn ointment to '.$short);
-			}
+		elseif ($data->message == "!burn") {
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Burn who?");
 		}
 
-		function superBurn($irc, $data) {
-			$burnee = trim(substr($data->message, 11));
+		else {
+			$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'gives the burn ointment to '.$short);
+		}
+	}
 
-			if ($data->message == "!superburn AakashBot" || $data->message == "!superburn ScooterAmerica") {
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "HOW DARE YOU!!!");
-				$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'ignites '.$data->nick.' with a flamethrower!');
-			}
+	function superBurn($irc, $data) {
+		$burnee = trim(substr($data->message, 11));
 
-			elseif ($data->message == "!superburn") {
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Who is that directed towards?");
-			}
-
-			else {
-				$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'sets '.$burnee.' on fire!');
-			}
+		if ($data->message == "!superburn AakashBot" || $data->message == "!superburn ScooterAmerica") {
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "HOW DARE YOU!!!");
+			$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'ignites '.$data->nick.' with a flamethrower!');
 		}
 
-		// gives operator status to a user (bot must have ops already to do this)
-		function opMe($irc, $data) {
-			$dcs = array(
-				"ScooterAmerica",
-				"compywiz",
-				"bro_keefe",
-				"stan_theman",
-				"jico",
-				"NellyFatFingers",
-				"prg318",
-				"ericoc",
-				"OpEx"
-				);
-
-			if (in_array($data->nick, $dcs)) {
-               			$irc->op($data->channel, $data->nick);
-			}	
-
-			else {
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Sorry ".$data->nick.".  You're not on the list");
-			}
+		elseif ($data->message == "!superburn") {
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Who is that directed towards?");
 		}
 
-		// makes the decision for us so we dont have to
-		function straws($irc, $data) {
-			$nicks = array(" ScooterAmerica", " stan_theman", " bro_keefe", " compywiz", " NellyFatFingers", " jico", " prg318", " ericoc", " OpEx");
-			$rand_nick = shuffle($nicks);
-
-			$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'hands out the straws.' .$nicks[$rand_nick]. ' got the short straw.');
+		else {
+			$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'sets '.$burnee.' on fire!');
 		}
+	}
+
+	// gives operator status to a user (bot must have ops already to do this)
+	function opMe($irc, $data) {
+		$dcs = array(
+			"ScooterAmerica",
+			"compywiz",
+			"bro_keefe",
+			"stan_theman",
+			"jico",
+			"NellyFatFingers",
+			"prg318",
+			"ericoc",
+			"OpEx"
+			);
+
+		if (in_array($data->nick, $dcs)) {
+			$irc->op($data->channel, $data->nick);
+		}
+
+		else {
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Sorry ".$data->nick.".  You're not on the list");
+		}
+	}
+
+	// makes the decision for us so we dont have to
+	function straws($irc, $data) {
+		$nicks = array(
+			" ScooterAmerica",
+			" stan_theman",
+			" bro_keefe",
+			" compywiz",
+			" NellyFatFingers",
+			" jico",
+			" prg318",
+			" ericoc",
+			" OpEx"
+			);
+		$rand_nick = shuffle($nicks);
+
+		$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'hands out the straws.' .$nicks[$rand_nick]. ' got the short straw.');
+	}
+
+	// invites a user to a specific channel
+	function inviteUser($irc, $data) {
+		$nick = $data->messageex[1];
+		$channel = $data->messageex[2];
+		$irc->invite($nick, $channel);
+
+		$irc->message(SMARTIRC_TYPE_QUERY, $data->nick, "Inviting ".$nick." to ".$channel);
+		$irc->message(SMARTIRC_TYPE_QUERY, $nick, "Join ".$channel." and be cool");
+	}
 }
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -984,7 +1007,7 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!dcsmeeting', $bot, 'countDownToNextMeeting');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!confirm', $bot, 'meeting_List');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!topic\b', $bot, 'meeting_Topic');
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL,'^!location\b', $bot, 'meeting_Location');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!location\b', $bot, 'meeting_Location');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   Bot Talk
@@ -1018,6 +1041,7 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!superburn ([_\w]+)', $bot, 'superBurn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^\b!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
+	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!invite', $bot, 'inviteUser');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 $irc->listen();
 $irc->disconnect();
