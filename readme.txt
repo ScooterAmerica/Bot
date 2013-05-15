@@ -27,7 +27,7 @@ API SEARCH
 
 SCORES
 	!scores <league> - will grab the current scores for the games that day for the league specified. The leagues set up
-	right now are NHL, NFL, NBA, NCAA Mens Basketball, MLB. Working on Soccer in the US and Euro Leagues as well as possibly Golf and 
+	right now are NHL, NFL, NBA, NCAA Mens Basketball, MLB. Working on Soccer in the US and Euro Leagues as well as possibly Golf and
 	NCAA Mens and Womens Volleyball.
 
 Other Miscellaneous Functions
