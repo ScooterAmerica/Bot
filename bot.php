@@ -63,7 +63,7 @@ class mybot {
 		$newmsg = trim(substr($data->message, 5));
 
 		// text sent to channel
-		$irc->message(SMARTIRC_TYPE_CHANNEL, '#dcs', $newmsg);	
+		$irc->message(SMARTIRC_TYPE_CHANNEL, '#dcs', $newmsg);
 	}
 
 	// auto rejoin
@@ -91,8 +91,8 @@ class mybot {
 	function api($irc, $data) {
 		$api = trim(substr($data->message, 5));
 		$apiLibraries = array(
-				"java"=>" http://docs.oracle.com/javase/1.5.0/docs/api/", 
-				"php"=>" http://php.net/manual/en/book.spl.php", 
+				"java"=>" http://docs.oracle.com/javase/1.5.0/docs/api/",
+				"php"=>" http://php.net/manual/en/book.spl.php",
 				"haskell"=>" http://www.haskell.org/hoogle/",
 				"python"=>" http://docs.python.org/library/",
 				"perl"=>" http://perldoc.perl.org/index-language.html"
@@ -140,7 +140,7 @@ class mybot {
 		}
 
 		else {
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' http://www.php.net/manual-lookup.php?pattern='.$term.'&lang=en&scope=quickref');	
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' http://www.php.net/manual-lookup.php?pattern='.$term.'&lang=en&scope=quickref');
 		}
 	}
 
@@ -216,7 +216,7 @@ class mybot {
 		}
 
 		else {
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' http://www.haskell.org/hoogle/?hoogle='.$term5);		
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.' http://www.haskell.org/hoogle/?hoogle='.$term5);
 		}
 	}
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -363,7 +363,7 @@ class mybot {
 
 			else {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Your results: https://www.google.com/#q=".$google);
-			
+
 			}
 		}
 	}
@@ -398,7 +398,7 @@ class mybot {
 
   Notes
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	/*Keep a note/notes of something..like a reminder function except saved in a file forever. 
+	/*Keep a note/notes of something..like a reminder function except saved in a file forever.
 	Notes are saved in a file named by the users hostname. This way if the user changes their
 	nick the bot will still be able to find the notes file associated with them.*/
 
@@ -467,7 +467,7 @@ class mybot {
 			$j = $i-1;
 			unset($notes[$j]);
 
-			$newNotes = fopen("Function_Files/Notes/".$person.".txt", "w+");				
+			$newNotes = fopen("Function_Files/Notes/".$person.".txt", "w+");
 			foreach ($notes as $value) {
 				$writeNotes = $value."\r\n";
 				fwrite($newNotes, $writeNotes);
@@ -483,7 +483,7 @@ class mybot {
 	}
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  Users Manual
+  User's Manual
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 	// bot help manual (provides specific help for each of the bots functions) equivalent to the "man" pages in Linux
 	function help($irc, $data) {
@@ -522,19 +522,19 @@ class mybot {
 				case "say":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: (PM) !say <message>");
 					break;
-	
+
 				case "hash":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: (PM) !hash <text>");
 					break;
-	
+
 				case "insult":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !insult <nick>");
 					break;
-	
+
 				case "compliment":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !compliment <nick>");
 					break;
-	
+
 				case "AakashBot":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Help Options: all | api | burn | meetings | compliment | confirm | drawstraws | google | hash | insult | invite | notes | say | scores");
 					break;
@@ -548,12 +548,12 @@ class mybot {
 					break;
 
 				case "invite":
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: !invite <nickname> <channel>");
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Usage: (PM) !invite <nickname> <channel>");
 					break;
 
 				case "all":
 					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "http://forum.deadcodersociety.org/index.php/topic,217.0.html");
-					break;			
+					break;
 			}
 		}
 	}
@@ -568,7 +568,7 @@ static $location = "";
 		if ($data->message == "!setmeeting over") {
 			$meetingOver = fopen("Function_Files/dcsmeetings/meetingDate.txt", "w");
 			fclose($meetingOver);
-			
+
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Meeting Schedule Cleared");
 		}
 
@@ -636,7 +636,7 @@ static $location = "";
 
 		// Topic
 		$top = fopen("Function_Files/dcsmeetings/topic.txt", "r");
-		$currentTop = fgets($top);		
+		$currentTop = fgets($top);
 
 		if (empty($currentTop)) {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic undecided");
@@ -672,7 +672,7 @@ static $location = "";
 		if ($data->message == "!topic") {
 			$top = fopen("Function_Files/dcsmeetings/topic.txt", "r");
 			$currentTop = fgets($top);
-		
+
 			if (empty($currentTop)) {
 				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Topic undecided");
 			}
@@ -773,7 +773,7 @@ static $location = "";
 		switch($response) {
 
 			/*The yes and no cases, the bot opens the file, first checks to see if there is a response from that user,
-			if not, the bot will add the users response, if the user already responded and it matches their current response, the bot informs the 
+			if not, the bot will add the users response, if the user already responded and it matches their current response, the bot informs the
 			user they have already responded, if the answer is different (i.e. yes to no or vice versa), the bot will erase the first response and record the new one.
 			*/
 			case "yes":
@@ -881,7 +881,7 @@ static $location = "";
 
 		if ($data->message == "!burn AakashBot") {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You're not good enough to burn me");
-		}			
+		}
 
 		elseif ($data->message == "!burn") {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." Burn who?");
@@ -972,7 +972,7 @@ static $location = "";
 
   Bot Users Manual
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!help\b', $bot, 'help');     
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!help\b', $bot, 'help');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   API Libraries
