@@ -580,8 +580,6 @@ static $location = "";
 				$meetingTime = $data->messageex[2];
 
 				if ($meetingDate > time()) {
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Meeting set by ".$data->nick." for ".$date." at ".$meetingTime.".");
-
 					$dcsMeeting = fopen("Function_Files/dcsmeetings/meetingDate.txt", "w");
 					fwrite($dcsMeeting, $date."\r\n");
 					fwrite($dcsMeeting, $meetingTime."\r\n");
@@ -608,13 +606,14 @@ static $location = "";
 		$meetingInfo = file("Function_Files/dcsmeetings/meetingDate.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
 		if (empty($meetingInfo)) {
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "There are no DCS meetings currently scheduled");
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "There is no DCS meeting currently scheduled");
 		}
 
 		else {
 			$date = $meetingInfo[0];
 			$meetingTime = $meetingInfo[1];
 			$meetingDate = $meetingInfo[2];
+			$meetingSetBy = $meetingInfo[3];
 			$timeUntilMeeting = abs($meetingDate - time());
 
 			$daysLeft = (int)($timeUntilMeeting/86400);
@@ -622,6 +621,7 @@ static $location = "";
 			$minsLeft = (int)(($timeUntilMeeting-($daysLeft*86400)-($hoursLeft*3600))/60);
 
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "dcs: Next Meeting scheduled for ".$date." at ".$meetingTime.". Which is in ".$daysLeft." day(s), ".$hoursLeft." hour(s), and ".$minsLeft." minute(s).");
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $meetingSetBy);
 
 			$this->checkTopicAndLocation($irc, $data);
 		}
@@ -913,13 +913,9 @@ static $location = "";
 	function opMe($irc, $data) {
 		$dcs = array(
 			"ScooterAmerica",
-			"compywiz",
 			"bro_keefe",
-			"stan_theman",
 			"jico",
-			"NellyFatFingers",
-			"prg318",
-			"ericoc",
+			"nelly",
 			"OpEx"
 			);
 
@@ -928,7 +924,7 @@ static $location = "";
 		}
 
 		else {
-			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Sorry ".$data->nick.".  You're not on the list");
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Nope");
 		}
 	}
 
@@ -1015,7 +1011,7 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, 'doit', $bot, 'doit');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, 'twss', $bot, 'twss');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!me\b', $bot, 'hilightMe');
-	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!say', $bot, 'query');
+	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!say', $bot, 'privateMessage');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!hash', $bot, 'hash');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!compliment ([_\w]+)', $bot, 'nice');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!insult ([_\w]+)', $bot, 'mean');
@@ -1039,7 +1035,7 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!quit', $bot, 'quit');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!burn ([_\w]+)', $bot, 'burn');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!superburn ([_\w]+)', $bot, 'superBurn');
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^\b!op\b', $bot, 'opMe');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!invite', $bot, 'inviteUser');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
