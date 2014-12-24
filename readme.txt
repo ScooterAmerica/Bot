@@ -38,3 +38,7 @@ Other Miscellaneous Functions
 	(PM) !say <message> - makes the bot say a message in ‘#dcs’
 	(PM) !hash <text> - returns md5 hash of text sent
 	(PM) !invite <nickname> <channel> - invite a user to a specific channel. Also sends a message to that user.
+
+INVITE AND IDENTIFY (BOT ITSELF)
+	!identify will now have the Bot identify with NickServ so he can get his cloak from services (he likes to play ninja). Also took the smart route for once and didnt put his password to identify right in the code.  Instead he's got a nifty password file for that sort of thing (okay, its not really that innovative or "nifty", but i still thought it was worth a mention.
+	!invite takes care of the part where im lazy and got tired of having to PM the bot to join a new channel.  Now just /invite <bot> like you would any other person and the bot will automatically join the channel.

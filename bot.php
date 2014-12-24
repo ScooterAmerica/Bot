@@ -26,6 +26,9 @@
 	include_once('Function_Files/Scores/ncaaScores.php');
 	include_once('Function_Files/Scores/nflScores.php');
 	include_once('Function_Files/Scores/nhlScores.php');
+
+	//Password file
+	include_once('Function_Files/passwords.txt');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   Basic Bot Functions
@@ -48,13 +51,6 @@ class mybot {
 	function leaveChannel($irc, $data) {
 		if ($data->nick == "ScooterAmerica") {
 			$irc->part($data->messageex[1]);
-		}
-	}
-
-	// join a channel
-	function joinChannel($irc, $data) {
-		if ($data->nick == "ScooterAmerica") {
-			$irc->join($data->messageex[1]);
 		}
 	}
 
@@ -83,6 +79,19 @@ class mybot {
 		if ($data->nick == "neilforobot") {
 			$irc->message(SMARTIRC_TYPE_ACTION, $data->channel, 'glares at neilforobot');
 		}
+	}
+
+	// invite the bot to join a channel (replaces joinChannel)
+	function joinChannelInvited($irc, $data) {
+		$irc->join($data->messageex[0]);
+	}
+
+	// identify with NickServ
+	function identify($irc, $data) {
+		$password = file_get_contents('Function_Files/passwords.txt');
+
+		list($user, $pw) = explode("=", $password);
+		$irc->message(SMARTIRC_TYPE_QUERY, 'NickServ', 'identify '.$pw);
 	}
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -264,7 +273,7 @@ class mybot {
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, 'She said that! Yes?');
 	}
 
-	function hilightTest($irc, $data) {
+	function hilightMe($irc, $data) {
 		$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick.': ping!');
 	}
 
@@ -569,6 +578,15 @@ static $location = "";
 			$meetingOver = fopen("Function_Files/dcsmeetings/meetingDate.txt", "w");
 			fclose($meetingOver);
 
+			$topicOver = fopen("Function_Files/dcsmeetings/topic.txt", "w");
+			fclose($topicOver);
+
+			$locationOver = fopen("Function_Files/dcsmeetings/location.txt", "w");
+			fclose($locationOver);
+
+			$clearAttendance = fopen("Function_Files/dcsmeetings/attendancelist.txt", "w");
+			fclose($clearAttendance);
+
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Meeting Schedule Cleared");
 		}
 
@@ -601,19 +619,25 @@ static $location = "";
 		}
 	}
 
-	// countdown to next meeting (working on making this able to be set via a command in the IRC channel.)
+	// countdown to next meeting
 	function countDownToNextMeeting ($irc, $data) {
 		$meetingInfo = file("Function_Files/dcsmeetings/meetingDate.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+		$date = $meetingInfo[0];
+		$meetingTime = $meetingInfo[1];
+		$meetingDate = $meetingInfo[2];
+		$meetingSetBy = $meetingInfo[3];
+
 
 		if (empty($meetingInfo)) {
 			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "There is no DCS meeting currently scheduled");
 		}
 
+		elseif ($meetingDate < time()) {
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "The meeting has started or is already over");
+		}
+
 		else {
-			$date = $meetingInfo[0];
-			$meetingTime = $meetingInfo[1];
-			$meetingDate = $meetingInfo[2];
-			$meetingSetBy = $meetingInfo[3];
 			$timeUntilMeeting = abs($meetingDate - time());
 
 			$daysLeft = (int)($timeUntilMeeting/86400);
@@ -769,107 +793,114 @@ static $location = "";
 
 	// function to keep a list of those who will be and wont be attending meetings
 	function meeting_List($irc, $data) {
+		$meetingInfo = file("Function_Files/dcsmeetings/meetingDate.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$response = $data->messageex[1];
-		switch($response) {
 
+		if (empty($meetingInfo)) {
+			$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "The list is unavailable since there is no meeting scheduled");
+	}
+
+		else {
+			switch($response) {
 			/*The yes and no cases, the bot opens the file, first checks to see if there is a response from that user,
 			if not, the bot will add the users response, if the user already responded and it matches their current response, the bot informs the
 			user they have already responded, if the answer is different (i.e. yes to no or vice versa), the bot will erase the first response and record the new one.
 			*/
-			case "yes":
-				$attending = file("Function_Files/dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+				case "yes":
+					$attending = file("Function_Files/dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-				if (!in_array($data->nick." said yes", $attending) && !in_array($data->nick." said no", $attending)) {
-					$attending = fopen("dcsmeetings/attendancelist.txt", "a+");
-					$name = $data->nick." said yes";
-					fwrite($attending, $name."\n");
-					fclose($attending);
+					if (!in_array($data->nick." said yes", $attending) && !in_array($data->nick." said no", $attending)) {
+						$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "a+");
+						$name = $data->nick." said yes";
+						fwrite($attending, $name."\n");
+						fclose($attending);
 
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Yes Confirmed. See you there!");
-				}
-
-				elseif (in_array($data->nick." said no", $attending) && !in_array($data->nick." said yes", $attending)) {
-					$name = array_search($data->nick." said no", $attending);
-					unset($attending[$name]);
-					$newName = $data->nick." said yes\n";
-
-					$newResponse = fopen("Function_Files/dcsmeetings/attendancelist.txt", "w+");
-					fwrite($newResponse, $newName);
-					$response = "";
-					foreach ($attending as $value)
-					{
-						$response = $value."\r\n";
-						fwrite($newResponse, $response);
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Yes Confirmed. See you there!");
 					}
-					fclose($newResponse);
 
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Glad to see you wised up. Yes Confirmed");
-				}
+					elseif (in_array($data->nick." said no", $attending) && !in_array($data->nick." said yes", $attending)) {
+						$name = array_search($data->nick." said no", $attending);
+						unset($attending[$name]);
+						$newName = $data->nick." said yes\n";
 
-				else {
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You've already said yes.");
-				}
-			break;
+						$newResponse = fopen("Function_Files/dcsmeetings/attendancelist.txt", "w+");
+						fwrite($newResponse, $newName);
+						$response = "";
+						foreach ($attending as $value)
+						{
+							$response = $value."\r\n";
+							fwrite($newResponse, $response);
+						}
+						fclose($newResponse);
 
-			case "no":
-				$attending = file("Function_Files/dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-				if (!in_array($data->nick." said no", $attending) && !in_array($data->nick." said yes", $attending)) {
-					$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "a+");
-					$name = $data->nick." said no";
-
-					fwrite($attending, $name."\n");
-					fclose($attending);
-
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "No Confirmed. You won't be missed.");
-				}
-
-				elseif (in_array($data->nick." said yes", $attending) && !in_array($data->nick." said no", $attending)) {
-					$name = array_search($data->nick." said yes", $attending);
-					unset($attending[$name]);
-					$newName = $data->nick." said no\n";
-
-					$newResponse = fopen("Function_Files/dcsmeetings/attendancelist.txt", "w+");
-					fwrite($newResponse, $newName);
-					$response = "";
-					foreach ($attending as $value) {
-						$response = $value."\r\n";
-						fwrite($newResponse, $response);
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Glad to see you wised up. Yes Confirmed");
 					}
-					fclose($newResponse);
 
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "You'll regret this. Change to no confirmed");
-				}
-
-				else {
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You said no already. We get it.");
-				}
-			break;
-
-			// reads out all the user reponses with who said yes and who said no
-			case "attendance":
-				$names = file_get_contents("Function_Files/dcsmeetings/attendancelist.txt");
-
-				if (strlen($names) > 1) {
-					$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "r");
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Responses so Far:");
-
-					while(!feof($attending)) {
-						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, fgets($attending));
+					else {
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You've already said yes.");
 					}
-					fclose($attending);
-				}
+				break;
 
-				else {
-					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "No one had responsed yet");
-				}
-			break;
+				case "no":
+					$attending = file("Function_Files/dcsmeetings/attendancelist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-			// clears the contents of the file thereby clearing the list.
-			case "cleared":
-				file_put_contents("Function_Files/dcsmeetings/attendancelist.txt", NULL);
-				$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Lists cleared");
-			break;
+					if (!in_array($data->nick." said no", $attending) && !in_array($data->nick." said yes", $attending)) {
+						$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "a+");
+						$name = $data->nick." said no";
+
+						fwrite($attending, $name."\n");
+						fclose($attending);
+
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "No Confirmed. You won't be missed.");
+					}
+
+					elseif (in_array($data->nick." said yes", $attending) && !in_array($data->nick." said no", $attending)) {
+						$name = array_search($data->nick." said yes", $attending);
+						unset($attending[$name]);
+						$newName = $data->nick." said no\n";
+
+						$newResponse = fopen("Function_Files/dcsmeetings/attendancelist.txt", "w+");
+						fwrite($newResponse, $newName);
+						$response = "";
+						foreach ($attending as $value) {
+							$response = $value."\r\n";
+							fwrite($newResponse, $response);
+						}
+						fclose($newResponse);
+
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "You'll regret this. Change to no confirmed");
+					}
+
+					else {
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, $data->nick." You said no already. We get it.");
+					}
+				break;
+
+				// reads out all the user reponses with who said yes and who said no
+				case "attendance":
+					$names = file_get_contents("Function_Files/dcsmeetings/attendancelist.txt");
+
+					if (strlen($names) > 1) {
+						$attending = fopen("Function_Files/dcsmeetings/attendancelist.txt", "r");
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Responses so Far:");
+
+						while(!feof($attending)) {
+							$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, fgets($attending));
+						}
+						fclose($attending);
+					}
+
+					else {
+						$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "No one had responded yet");
+					}
+				break;
+
+				// clears the contents of the file thereby clearing the list.
+				case "cleared":
+					file_put_contents("Function_Files/dcsmeetings/attendancelist.txt", NULL);
+					$irc->message(SMARTIRC_TYPE_CHANNEL, $data->channel, "Lists cleared");
+				break;
+			}
 		}
 	}
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -994,7 +1025,10 @@ static $location = "";
 
 	// leave and join
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!leave', $bot, 'leaveChannel');
-	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!join', $bot, 'joinChannel');
+	$irc->registerActionhandler(SMARTIRC_TYPE_INVITE, '.*', $bot, 'joinChannelInvited');
+
+	//identify bot with NickServ
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!identify', $bot, 'identify');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   DCS Meeting Functions
@@ -1013,8 +1047,8 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!me\b', $bot, 'hilightMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!say', $bot, 'privateMessage');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!hash', $bot, 'hash');
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!compliment ([_\w]+)', $bot, 'nice');
-	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!insult ([_\w]+)', $bot, 'mean');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!compliment ([_\w]+)', $bot, 'beNice');
+	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!insult ([_\w]+)', $bot, 'beMean');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drink', $bot, 'drinking_game');
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1038,7 +1072,7 @@ static $location = "";
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!op\b', $bot, 'opMe');
 	$irc->registerActionhandler(SMARTIRC_TYPE_CHANNEL, '^!drawstraws', $bot, 'straws');
 	$irc->registerActionhandler(SMARTIRC_TYPE_QUERY, '^!invite', $bot, 'inviteUser');
-/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 $irc->listen();
 $irc->disconnect();
 ?>
